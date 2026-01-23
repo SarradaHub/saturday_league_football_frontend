@@ -6,27 +6,27 @@ import { dirname, resolve } from "node:path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const designSystemRoot = resolve(__dirname, "../platform/design-system");
+const designSystemSrc = resolve(designSystemRoot, "src/index.ts");
+const designSystemTokensSrc = resolve(designSystemRoot, "src/tokens/index.ts");
+const designSystemCss = resolve(
+  designSystemRoot,
+  "dist/tokens/css-variables.css",
+);
 
 // https://vite.dev/config/
+const apiProxyTarget =
+  process.env.VITE_API_PROXY_TARGET?.trim() || "http://localhost:3004";
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
-      // Alias root import to the actual entry point
-      "@sarradahub/design-system$": resolve(
-        __dirname,
-        "../platform/design-system/dist/index.js",
-      ),
-      // Alias subpath imports to their actual locations
-      "@sarradahub/design-system/tokens": resolve(
-        __dirname,
-        "../platform/design-system/dist/tokens/index.js",
-      ),
-      "@sarradahub/design-system/css": resolve(
-        __dirname,
-        "../platform/design-system/dist/tokens/css-variables.css",
-      ),
+      // Use design system source to guarantee Tailwind can scan classes
+      "@sarradahub/design-system$": designSystemSrc,
+      "@sarradahub/design-system/tokens": designSystemTokensSrc,
+      "@sarradahub/design-system/css": designSystemCss,
     },
     // Ensure Vite respects package.json exports for subpath imports
     conditions: ["import", "module", "browser", "default"],
@@ -41,7 +41,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/api": {
-        target: "http://localhost:3004",
+        target: apiProxyTarget,
         changeOrigin: true,
         secure: false,
         configure: (proxy) => {
@@ -50,7 +50,7 @@ export default defineConfig({
               "Proxying request:",
               req.method,
               req.url,
-              "-> http://localhost:3004",
+              `-> ${apiProxyTarget}`,
             );
           });
         },

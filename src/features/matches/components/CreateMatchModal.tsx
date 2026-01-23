@@ -118,8 +118,8 @@ const CreateMatchModal = ({
           />
         </div>
         {error && (
-          <div className="mb-6 rounded-lg border border-red-100 bg-red-50 p-3">
-            <span className="text-sm text-red-600">{error}</span>
+          <div className="mb-6 rounded-lg border border-error-100 bg-error-50 p-3">
+            <span className="text-sm text-error-600">{error}</span>
           </div>
         )}
       </form>

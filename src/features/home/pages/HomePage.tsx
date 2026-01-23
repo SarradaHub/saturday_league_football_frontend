@@ -5,19 +5,19 @@ import Container from "@/shared/components/layout/Container";
 
 const heroFeatures = [
   {
-    icon: <FaChartLine className="mb-4 h-8 w-8 text-blue-600" />,
+    icon: <FaChartLine className="mb-4 h-8 w-8 text-primary-600" />,
     title: "Estatísticas Detalhadas",
     description:
       "Dados específicos como gols, assistências e desempenho individual com visualizações temporais personalizadas.",
   },
   {
-    icon: <FaRobot className="mb-4 h-8 w-8 text-green-600" />,
+    icon: <FaRobot className="mb-4 h-8 w-8 text-success-600" />,
     title: "Automação Inteligente",
     description:
       "Algoritmos que organizam rodadas automaticamente, equilibrando times com base em habilidades e frequência.",
   },
   {
-    icon: <FaTrophy className="mb-4 h-8 w-8 text-yellow-600" />,
+    icon: <FaTrophy className="mb-4 h-8 w-8 text-warning-600" />,
     title: "Histórico Competitivo",
     description:
       "Rankings atualizados e conquistas históricas para promover competição saudável entre jogadores.",
@@ -25,7 +25,7 @@ const heroFeatures = [
 ];
 
 const HomePage = () => (
-  <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 font-sans">
+  <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-neutral-800 font-sans">
     <section className="relative pb-20 pt-24">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -37,17 +37,17 @@ const HomePage = () => (
             >
               <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl">
                 Transforme Suas{" "}
-                <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
                   Peladas
                 </span>
               </h1>
-              <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-300 sm:text-xl">
+              <p className="mx-auto mb-8 text-neutral-300 max-w-7xl">
                 Organize, analise e evolua suas peladas com ferramentas
                 profissionais de forma simples e intuitiva.
               </p>
               <Link
                 to="/championships"
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-transform hover:scale-105 hover:bg-blue-700 hover:shadow-xl"
+                className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-transform hover:scale-105 hover:bg-primary-700 hover:shadow-xl"
               >
                 Comece Agora Gratuitamente
               </Link>
@@ -60,7 +60,7 @@ const HomePage = () => (
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           <h2 className="md:col-span-12 mb-16 text-center text-3xl font-bold text-white">
-            <span className="border-b-4 border-blue-500 pb-2">
+            <span className="border-b-4 border-primary-500 pb-2">
               Vantagens Exclusivas
             </span>
           </h2>
@@ -76,10 +76,10 @@ const HomePage = () => (
               >
                 <div className="text-center">
                   {feature.icon}
-                  <h3 className="mb-4 text-2xl font-bold text-gray-900">
+                  <h3 className="mb-4 text-2xl font-bold text-neutral-900">
                     {feature.title}
                   </h3>
-                  <p className="leading-relaxed text-gray-600">
+                  <p className="leading-relaxed text-neutral-600">
                     {feature.description}
                   </p>
                 </div>
@@ -89,16 +89,16 @@ const HomePage = () => (
         </div>
       </Container>
     </section>
-    <section className="bg-slate-800 py-16">
+    <section className="bg-neutral-800 py-16">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <div className="md:col-span-12 mx-auto max-w-3xl text-center">
+          <div className="md:col-span-12 mx-auto max-w-7xl text-center">
             <h3 className="mb-6 text-3xl font-bold text-white">
               Pronto para revolucionar suas peladas?
             </h3>
             <Link
               to="/championships"
-              className="mx-auto inline-flex items-center gap-2 rounded-xl bg-green-500 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-transform hover:scale-105 hover:bg-green-600 hover:shadow-xl"
+              className="mx-auto inline-flex items-center gap-2 rounded-xl bg-success-500 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-transform hover:scale-105 hover:bg-success-600 hover:shadow-xl"
             >
               <FaTrophy className="h-5 w-5" aria-hidden />
               Comece Agora

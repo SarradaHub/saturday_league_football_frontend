@@ -104,6 +104,26 @@ export class HttpMethodFactory {
   }
 }
 
+export interface PaginationMeta {
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
+
+export interface QueryParams {
+  page?: number;
+  per_page?: number;
+  fields?: string;
+  include?: string;
+  [key: string]: unknown;
+}
+
 export abstract class BaseService<
   TEntity,
   TCreate = Partial<TEntity>,
@@ -145,9 +165,27 @@ export abstract class BaseService<
     throw new Error("An unexpected error occurred");
   }
 
-  protected async getAll(params?: TQuery): Promise<TEntity[]> {
+  protected async getAll(params?: TQuery & QueryParams): Promise<TEntity[]> {
     try {
-      const response = await this.executeRequest<TEntity[]>(
+      const response = await this.executeRequest<
+        TEntity[] | PaginatedResponse<TEntity>
+      >("GET", "/", undefined, params);
+      const data = this.handleResponse(response);
+      // Check if response is paginated
+      if (data && typeof data === "object" && "data" in data) {
+        return (data as PaginatedResponse<TEntity>).data;
+      }
+      return data as TEntity[];
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  protected async getAllPaginated(
+    params?: TQuery & QueryParams,
+  ): Promise<PaginatedResponse<TEntity>> {
+    try {
+      const response = await this.executeRequest<PaginatedResponse<TEntity>>(
         "GET",
         "/",
         undefined,

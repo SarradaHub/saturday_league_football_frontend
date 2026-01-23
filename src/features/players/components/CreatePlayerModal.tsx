@@ -50,6 +50,7 @@ const CreatePlayerModal = ({
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [existingPlayers, setExistingPlayers] = useState<Player[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showRoundFilter, setShowRoundFilter] = useState(false);
 
@@ -57,8 +58,12 @@ const CreatePlayerModal = ({
   currentPlayersRef.current = currentPlayers;
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setIsSubmitting(false);
+      return;
+    }
     setError(null);
+    setIsSubmitting(false);
     if (!championshipId) {
       setExistingPlayers([]);
       return;
@@ -110,16 +115,20 @@ const CreatePlayerModal = ({
     setSearchTerm("");
     setSelectedPlayer(null);
     setError(null);
+    setIsSubmitting(false);
     onClose();
   }, [onClose]);
 
   const handleSubmit = useCallback(async () => {
+    if (isSubmitting) return;
+    
     setError(null);
     if (!targetId) {
       setError("Selecione uma rodada antes de continuar.");
       return;
     }
 
+    setIsSubmitting(true);
     try {
       if (selectedPlayer) {
         if (context === "round") {
@@ -132,6 +141,7 @@ const CreatePlayerModal = ({
         const normalizedName = searchTerm.trim();
         if (!normalizedName) {
           setError("Informe um nome válido para o jogador.");
+          setIsSubmitting(false);
           return;
         }
 
@@ -139,6 +149,7 @@ const CreatePlayerModal = ({
           setError(
             "Não foi possível identificar a pelada para criar o jogador.",
           );
+          setIsSubmitting(false);
           return;
         }
 
@@ -160,11 +171,14 @@ const CreatePlayerModal = ({
           ? submitError.message
           : "Não foi possível concluir a operação.",
       );
+    } finally {
+      setIsSubmitting(false);
     }
   }, [
     championshipId,
     context,
     handleClose,
+    isSubmitting,
     onCreate,
     onExistingPlayerAdded,
     searchTerm,
@@ -182,8 +196,8 @@ const CreatePlayerModal = ({
           : `Criar Jogador para ${context === "team" ? "Time" : "Round"}`
       }
       formId="create-player-form"
-      isSubmitting={isLoading}
-      submitDisabled={isLoading || (!selectedPlayer && !searchTerm.trim())}
+      isSubmitting={isSubmitting || isLoading}
+      submitDisabled={isSubmitting || isLoading || (!selectedPlayer && !searchTerm.trim())}
       submitLabel={
         selectedPlayer
           ? `Adicionar ao ${context === "team" ? "Time" : "Round"}`
@@ -221,7 +235,7 @@ const CreatePlayerModal = ({
             isLoading={isLoading}
           />
           {error && (
-            <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
+            <div className="rounded-lg border border-error-100 bg-error-50 p-3 text-sm text-error-600">
               {error}
             </div>
           )}

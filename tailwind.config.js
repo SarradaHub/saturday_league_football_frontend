@@ -6,6 +6,7 @@ module.exports = {
     "./src/**/*.{js,jsx,ts,tsx}",
     "./public/index.html",
     "../../platform/design-system/src/**/*.{js,ts,jsx,tsx}",
+    "../../platform/design-system/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -45,12 +46,7 @@ module.exports = {
         lg: "16px",
         xl: "24px",
       },
-      // Project-specific breakpoints (extending design system breakpoints)
-      screens: {
-        ...designSystemConfig.theme.extend.screens,
-        xs: "480px",
-        "3xl": "1792px",
-      },
+      // Breakpoints are inherited from design-system, no need to override
     },
   },
   plugins: [

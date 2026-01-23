@@ -1,0 +1,20 @@
+services:
+  frontend:
+    image: node:20-alpine
+    working_dir: /workspace/saturday_league_football_frontend
+    command: sh -c "npm --prefix /workspace/platform/design-system install && npm --prefix /workspace/platform/design-system run build && npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    ports:
+      - "5173:5173"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      VITE_API_PROXY_TARGET: "http://host.docker.internal:3004"
+    volumes:
+      - ../:/workspace
+      - frontend_node_modules:/workspace/saturday_league_football_frontend/node_modules
+      - design_system_node_modules:/workspace/platform/design-system/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  frontend_node_modules:
+  design_system_node_modules:

@@ -12,7 +12,7 @@ const Navbar = () => {
   const closeMenu = () => setIsOpen(false);
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur font-sans">
+    <nav className="fixed inset-x-0 top-0 z-50 border-b border-neutral-200 bg-neutral-50/90 backdrop-blur font-sans">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-12 flex h-16 items-center justify-between">
@@ -31,8 +31,8 @@ const Navbar = () => {
                     [
                       "font-medium transition-colors duration-300 relative",
                       isActive
-                        ? "text-blue-600"
-                        : "text-gray-600 hover:text-blue-600",
+                        ? "text-primary-600"
+                        : "text-neutral-600 hover:text-primary-600",
                     ].join(" ")
                   }
                 >
@@ -41,7 +41,7 @@ const Navbar = () => {
                       <span>{link.label}</span>
                       <span
                         className={[
-                          "absolute -bottom-1 left-0 h-0.5 w-full origin-left scale-x-0 bg-blue-600 transition-transform duration-300",
+                          "absolute -bottom-1 left-0 h-0.5 w-full origin-left scale-x-0 bg-primary-600 transition-transform duration-300",
                           isActive ? "scale-x-100" : "group-hover:scale-x-100",
                         ].join(" ")}
                       />
@@ -53,7 +53,7 @@ const Navbar = () => {
             <button
               type="button"
               onClick={toggleMenu}
-              className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 md:hidden"
+              className="rounded-lg p-2 text-neutral-600 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 md:hidden"
               aria-label="Toggle navigation"
               aria-expanded={isOpen}
             >
@@ -67,7 +67,7 @@ const Navbar = () => {
         </div>
       </Container>
       <div className={`md:hidden ${isOpen ? "block" : "hidden"}`}>
-        <div className="space-y-2 border-t bg-white px-4 pb-4 pt-2">
+        <div className="space-y-2 border-t bg-neutral-50 px-4 pb-4 pt-2">
           {navigationLinks.map((link) => (
             <NavLink
               key={link.to}
@@ -77,8 +77,8 @@ const Navbar = () => {
                 [
                   "block rounded-lg px-4 py-2 transition-colors",
                   isActive
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:bg-blue-50",
+                    ? "bg-primary-100 text-primary-700"
+                    : "text-neutral-600 hover:bg-primary-50",
                 ].join(" ")
               }
             >

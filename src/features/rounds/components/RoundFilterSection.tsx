@@ -30,14 +30,14 @@ const RoundFilterSection = ({
       <div className="mb-2 flex items-center justify-between">
         <label
           htmlFor="round-filter-select"
-          className="text-sm font-medium text-gray-700"
+          className="text-sm font-medium text-neutral-700"
         >
           Filtrar por rodada:
         </label>
         <button
           type="button"
           onClick={onToggleFilter}
-          className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 transition hover:text-blue-700"
+          className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 transition hover:text-primary-700"
         >
           <FiFilter aria-hidden />
           {showRoundFilter ? "Ocultar" : "Mostrar"}
@@ -49,7 +49,7 @@ const RoundFilterSection = ({
             id="round-filter-select"
             value={selectedRoundId ?? ""}
             onChange={(event) => onRoundChange(Number(event.target.value))}
-            className="w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           >
             {rounds.map((round) => (
               <option key={round.id} value={round.id}>
@@ -58,7 +58,7 @@ const RoundFilterSection = ({
               </option>
             ))}
           </select>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-neutral-500">
             Exibindo {existingPlayers.length} jogadores desta rodada.
           </p>
         </div>

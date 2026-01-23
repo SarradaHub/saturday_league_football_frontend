@@ -46,6 +46,7 @@ export interface PlayerStat {
   was_goalkeeper: boolean;
   match_id: number;
   team_id: number;
+  player_id: number;
   created_at: string;
   updated_at: string;
 }

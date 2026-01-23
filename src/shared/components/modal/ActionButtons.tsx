@@ -1,3 +1,4 @@
+import { Button } from "@sarradahub/design-system";
 import { Player } from "@/types";
 
 interface ActionButtonsProps {
@@ -18,18 +19,19 @@ const ActionButtons = ({
   onSubmit,
 }: ActionButtonsProps) => (
   <div className="mt-8 flex justify-end gap-3">
-    <button
+    <Button
       type="button"
+      variant="secondary"
       onClick={onClose}
-      className="rounded-lg px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50"
       disabled={isSubmitting}
     >
       Cancelar
-    </button>
-    <button
+    </Button>
+    <Button
       type="button"
+      variant="primary"
       onClick={onSubmit}
-      className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+      loading={isSubmitting}
       disabled={isSubmitting || (!searchTerm && !selectedPlayer)}
     >
       {isSubmitting
@@ -39,7 +41,7 @@ const ActionButtons = ({
         : selectedPlayer
           ? `Adicionar ao ${context === "team" ? "Time" : "Round"}`
           : "Criar Jogador"}
-    </button>
+    </Button>
   </div>
 );
 

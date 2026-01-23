@@ -34,11 +34,11 @@ const PlayerSearchInput = ({
             ? `Adicionar ${selectedPlayer.name} ao ${context === "team" ? "time" : "round"}`
             : "Busque jogadores ou crie um novo"
         }
-        className="w-full rounded-lg border px-4 py-3 pl-10 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+        className="w-full rounded-lg border px-4 py-3 pl-10 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
       />
-      <FaSearch className="absolute left-3 top-3.5 text-gray-400" aria-hidden />
+      <FaSearch className="absolute left-3 top-3.5 text-neutral-400" aria-hidden />
       {isLoading && (
-        <span className="absolute right-3 top-3.5 text-sm text-gray-500">
+        <span className="absolute right-3 top-3.5 text-sm text-neutral-500">
           Carregando...
         </span>
       )}
@@ -46,7 +46,7 @@ const PlayerSearchInput = ({
     {!selectedPlayer && searchTerm && (
       <div
         role="listbox"
-        className="max-h-60 overflow-y-auto rounded-lg border bg-white shadow-lg"
+        className="max-h-60 overflow-y-auto rounded-lg border bg-neutral-50 shadow-lg"
       >
         {filteredPlayers.length > 0 ? (
           filteredPlayers.map((player) => (
@@ -56,13 +56,13 @@ const PlayerSearchInput = ({
               role="option"
               aria-selected={false}
               onClick={() => onSelectPlayer(player)}
-              className="w-full border-b px-3 py-2 text-left text-sm transition hover:bg-gray-50"
+              className="w-full border-b px-3 py-2 text-left text-sm transition hover:bg-neutral-50"
             >
               {player.name}
             </button>
           ))
         ) : (
-          <div className="px-3 py-2 text-sm text-gray-500">
+          <div className="px-3 py-2 text-sm text-neutral-500">
             {isLoading
               ? "Carregando jogadores..."
               : "Nenhum jogador encontrado"}

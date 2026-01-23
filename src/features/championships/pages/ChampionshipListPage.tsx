@@ -94,12 +94,12 @@ const ChampionshipListPage = () => {
   }
 
   return (
-    <div className="mt-24 min-h-screen bg-gray-50 py-8 font-sans">
+    <div className="mt-24 min-h-screen bg-neutral-50 py-8 font-sans">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-8 flex items-center justify-between">
-            <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900">
-              <FaTrophy className="text-yellow-500" aria-hidden />
+            <h1 className="flex items-center gap-2 text-3xl font-bold text-neutral-900">
+              <FaTrophy className="text-warning-500" aria-hidden />
               Peladas Cadastradas
             </h1>
             <Button
@@ -125,22 +125,22 @@ const ChampionshipListPage = () => {
                   type="button"
                   onClick={() => handleCardClick(championship.id)}
                   whileHover={{ scale: 1.02 }}
-                  className="h-full rounded-xl bg-white p-6 text-left shadow-md transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="h-full rounded-xl bg-neutral-50 p-6 text-left shadow-md transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold text-gray-900">
+                    <h3 className="text-xl font-semibold text-neutral-900">
                       {championship.name}
                     </h3>
-                    <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
+                    <span className="rounded-full bg-primary-100 px-3 py-1 text-sm text-primary-800">
                       {championship.round_total} rodadas
                     </span>
                   </div>
                   {championship.description && (
-                    <p className="mt-4 text-sm text-gray-600">
+                    <p className="mt-4 text-sm text-neutral-600">
                       {championship.description}
                     </p>
                   )}
-                  <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
+                  <div className="mt-6 flex items-center justify-between text-sm text-neutral-500">
                     <span>{championship.total_players} jogadores</span>
                     <span>ID #{championship.id}</span>
                   </div>
@@ -148,7 +148,7 @@ const ChampionshipListPage = () => {
               ))}
             </motion.div>
           ) : (
-            <div className="md:col-span-12 rounded-lg bg-white py-12 text-center text-gray-500 shadow-sm">
+            <div className="md:col-span-12 rounded-lg bg-neutral-50 py-12 text-center text-neutral-500 shadow-sm">
               Nenhuma pelada cadastrada ainda.
             </div>
           )}

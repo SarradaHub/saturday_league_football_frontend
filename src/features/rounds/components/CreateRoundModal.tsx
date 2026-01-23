@@ -99,7 +99,7 @@ const CreateRoundModal = ({
         <div className="mb-6">
           <label
             htmlFor="round-date-picker"
-            className="mb-2 block text-sm font-medium text-gray-700"
+            className="mb-2 block text-sm font-medium text-neutral-700"
           >
             Data da Rodada *
           </label>
@@ -110,14 +110,14 @@ const CreateRoundModal = ({
             minDate={minDate}
             dateFormat="dd/MM/yyyy"
             placeholderText="Selecione uma data"
-            className="w-full rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border px-4 py-3 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
             required
             popperClassName="react-datepicker-popper"
           />
         </div>
         {error && (
-          <div className="mb-6 rounded-lg border border-red-100 bg-red-50 p-3">
-            <span className="text-sm text-red-600">{error}</span>
+          <div className="mb-6 rounded-lg border border-error-100 bg-error-50 p-3">
+            <span className="text-sm text-error-600">{error}</span>
           </div>
         )}
       </form>

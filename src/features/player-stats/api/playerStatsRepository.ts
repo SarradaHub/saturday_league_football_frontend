@@ -1,4 +1,4 @@
-import { BaseService } from "@/shared/api/baseService";
+import { BaseService, PaginatedResponse, QueryParams } from "@/shared/api/baseService";
 import { PlayerStat } from "@/types";
 
 interface PlayerStatPayload
@@ -14,17 +14,29 @@ interface PlayerStatPayload
   player_id: number;
 }
 
+interface PlayerStatsQueryParams extends QueryParams {
+  match_id?: number;
+  team_id?: number;
+  fields?: string;
+  include?: string;
+}
+
 class PlayerStatsRepository extends BaseService<
   PlayerStat,
   PlayerStatPayload,
-  PlayerStatPayload
+  PlayerStatPayload,
+  PlayerStatsQueryParams
 > {
   constructor() {
     super("/player_stats");
   }
 
-  list() {
-    return super.getAll();
+  list(params?: PlayerStatsQueryParams) {
+    return super.getAll(params);
+  }
+
+  listPaginated(params?: PlayerStatsQueryParams) {
+    return super.getAllPaginated(params);
   }
 
   findById(id: number) {

@@ -1,9 +1,10 @@
-import { BaseService } from "@/shared/api/baseService";
+import { BaseService, PaginatedResponse, QueryParams } from "@/shared/api/baseService";
 import { Player, PlayerStat } from "@/types";
 
-export interface PlayerFilters {
+export interface PlayerFilters extends QueryParams {
   championship_id?: number;
-  [key: string]: number | undefined;
+  fields?: string;
+  include?: string;
 }
 
 type UpsertPlayerPayload = Partial<
@@ -24,15 +25,26 @@ class PlayerRepository extends BaseService<
     super("/players");
   }
 
-  list(championshipId?: number) {
-    const params = championshipId
-      ? { championship_id: championshipId }
-      : undefined;
-    return super.getAll(params);
+  list(championshipId?: number, params?: Omit<PlayerFilters, "championship_id">) {
+    const queryParams: PlayerFilters = {
+      ...params,
+      ...(championshipId ? { championship_id: championshipId } : {}),
+    };
+    return super.getAll(queryParams);
   }
 
-  findById(id: number) {
-    return super.getById(id);
+  listPaginated(championshipId?: number, params?: Omit<PlayerFilters, "championship_id">) {
+    const queryParams: PlayerFilters = {
+      ...params,
+      ...(championshipId ? { championship_id: championshipId } : {}),
+    };
+    return super.getAllPaginated(queryParams);
+  }
+
+  findById(id: number, params?: Pick<PlayerFilters, "fields" | "include">) {
+    return this.executeRequest<Player>("GET", `/${id}`, undefined, params).then(
+      (response) => this.handleResponse(response),
+    );
   }
 
   createPlayer(data: UpsertPlayerPayload) {

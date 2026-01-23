@@ -19,6 +19,7 @@ import teamRepository from "@/features/teams/api/teamRepository";
 import CreateMatchModal from "@/features/matches/components/CreateMatchModal";
 import CreatePlayerModal from "@/features/players/components/CreatePlayerModal";
 import CreateTeamModal from "@/features/teams/components/CreateTeamModal";
+import RoundStatisticsSection from "@/features/rounds/components/RoundStatisticsSection";
 import Container from "@/shared/components/layout/Container";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 import { colors } from "@sarradahub/design-system/tokens";
@@ -151,7 +152,7 @@ const RoundDetailsPage = () => {
   if (!Number.isFinite(roundId)) {
     return (
       <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-red-50 px-4 py-3 text-red-600">
+        <span className="rounded-lg bg-error-50 px-4 py-3 text-error-600">
           Identificador de rodada inválido.
         </span>
       </div>
@@ -175,7 +176,7 @@ const RoundDetailsPage = () => {
           : "Rodada não encontrada.";
     return (
       <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-red-50 px-4 py-3 text-red-600">
+        <span className="rounded-lg bg-error-50 px-4 py-3 text-error-600">
           {message}
         </span>
       </div>
@@ -183,43 +184,43 @@ const RoundDetailsPage = () => {
   }
 
   return (
-    <div className="mt-24 min-h-screen bg-gray-50 py-8 font-sans">
+    <div className="mt-24 min-h-screen bg-neutral-50 py-8 font-sans">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
               <div>
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="mb-4 inline-flex items-center gap-2 text-gray-600 transition hover:text-gray-800"
+                  className="mb-4 inline-flex items-center gap-2 text-neutral-600 transition hover:text-neutral-800"
                 >
                   <FaArrowLeft aria-hidden />
                   Voltar
                 </button>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-bold text-neutral-900">
                   {round.name}
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-neutral-600">
                   {format(new Date(round.round_date), "dd MMMM yyyy")}
                 </p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800">
+              <span className="inline-flex items-center rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-800">
                 {matches.length} partidas
               </span>
             </div>
           </section>
 
-          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
-                <FaFutbol className="text-green-500" aria-hidden />
+              <h2 className="flex items-center gap-2 text-2xl font-semibold text-neutral-900">
+                <FaFutbol className="text-success-500" aria-hidden />
                 Partidas
               </h2>
               <button
                 type="button"
                 onClick={() => setMatchModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 font-medium text-white transition hover:bg-primary-700"
               >
                 <FaPlus aria-hidden />
                 Criar Partida
@@ -234,10 +235,10 @@ const RoundDetailsPage = () => {
                     variants={itemVariants}
                     initial="hidden"
                     animate="visible"
-                    className="w-full rounded-xl border border-gray-100 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-neutral-200 p-4 text-left transition hover:border-primary-200 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     onClick={() => navigate(`/matches/${match.id}`)}
                   >
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center justify-between text-sm text-neutral-500">
                       <span>
                         {format(new Date(match.created_at), "dd/MM/yyyy")}
                       </span>
@@ -247,7 +248,7 @@ const RoundDetailsPage = () => {
                       <p className="font-medium text-right">
                         {match.team_1.name}
                       </p>
-                      <div className="text-2xl font-bold text-gray-500">
+                      <div className="text-2xl font-bold text-neutral-500">
                         {match.team_1_goals} x {match.team_2_goals}
                       </div>
                       <p className="font-medium text-left">
@@ -258,22 +259,22 @@ const RoundDetailsPage = () => {
                 ))}
               </div>
             ) : (
-              <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
+              <p className="rounded-lg border border-dashed border-neutral-200 p-6 text-center text-neutral-500">
                 Nenhuma partida cadastrada.
               </p>
             )}
           </section>
 
-          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
-                <FaUser className="text-blue-500" aria-hidden />
+              <h2 className="flex items-center gap-2 text-2xl font-semibold text-neutral-900">
+                <FaUser className="text-primary-500" aria-hidden />
                 Jogadores
               </h2>
               <button
                 type="button"
                 onClick={() => setPlayerModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 font-medium text-white transition hover:bg-primary-700"
               >
                 <FaPlus aria-hidden />
                 Adicionar Jogador
@@ -285,10 +286,10 @@ const RoundDetailsPage = () => {
                 value={playerSearch}
                 onChange={(event) => setPlayerSearch(event.target.value)}
                 placeholder="Buscar jogador..."
-                className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
               />
               <FaSearch
-                className="absolute left-3 top-3 text-gray-400"
+                className="absolute left-3 top-3 text-neutral-400"
                 aria-hidden
               />
             </div>
@@ -301,17 +302,17 @@ const RoundDetailsPage = () => {
                     variants={itemVariants}
                     initial="hidden"
                     animate="visible"
-                    className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-left transition hover:border-primary-200 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     onClick={() => navigate(`/players/${player.id}`)}
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-lg font-bold text-blue-600">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-600">
                       {player.name.charAt(0).toUpperCase()}
                     </span>
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-neutral-900">
                         {player.name}
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-neutral-500">
                         Participou de {player.rounds?.length ?? 0} rodadas
                       </p>
                     </div>
@@ -319,22 +320,22 @@ const RoundDetailsPage = () => {
                 ))}
               </div>
             ) : (
-              <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
+              <p className="rounded-lg border border-dashed border-neutral-200 p-6 text-center text-neutral-500">
                 Nenhum jogador encontrado.
               </p>
             )}
           </section>
 
-          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
-                <FaUsers className="text-indigo-500" aria-hidden />
+              <h2 className="flex items-center gap-2 text-2xl font-semibold text-neutral-900">
+                <FaUsers className="text-secondary-500" aria-hidden />
                 Times
               </h2>
               <button
                 type="button"
                 onClick={() => setTeamModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 font-medium text-white transition hover:bg-primary-700"
               >
                 <FaPlus aria-hidden />
                 Criar Time
@@ -346,10 +347,10 @@ const RoundDetailsPage = () => {
                 value={teamSearch}
                 onChange={(event) => setTeamSearch(event.target.value)}
                 placeholder="Buscar time..."
-                className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
               />
               <FaSearch
-                className="absolute left-3 top-3 text-gray-400"
+                className="absolute left-3 top-3 text-neutral-400"
                 aria-hidden
               />
             </div>
@@ -362,18 +363,18 @@ const RoundDetailsPage = () => {
                     variants={itemVariants}
                     initial="hidden"
                     animate="visible"
-                    className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-left transition hover:border-primary-200 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     onClick={() =>
                       navigate(`/teams/${team.id}`, {
                         state: { roundId },
                       })
                     }
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-600">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary-100 text-lg font-bold text-secondary-600">
                       {team.name.charAt(0).toUpperCase()}
                     </span>
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-neutral-900">
                         {team.name}
                       </h3>
                     </div>
@@ -381,10 +382,20 @@ const RoundDetailsPage = () => {
                 ))}
               </div>
             ) : (
-              <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
+              <p className="rounded-lg border border-dashed border-neutral-200 p-6 text-center text-neutral-500">
                 Nenhum time encontrado.
               </p>
             )}
+          </section>
+
+          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
+            <div className="mb-6">
+              <h2 className="flex items-center gap-2 text-2xl font-semibold text-neutral-900">
+                <FaFutbol className="text-primary-500" aria-hidden />
+                Estatísticas da Rodada
+              </h2>
+            </div>
+            <RoundStatisticsSection roundId={roundId} />
           </section>
         </div>
       </Container>
