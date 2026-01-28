@@ -1,22 +1,22 @@
 import { useState } from "react";
 import { Modal, Button, Alert } from "@platform/design-system";
-import { Match } from "@/types";
+import { Championship } from "@/types";
 
-interface DeleteMatchModalProps {
+interface DeleteChampionshipModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => Promise<void>;
-  match: Match | null;
+  championship: Championship | null;
   isDeleting?: boolean;
 }
 
-const DeleteMatchModal = ({
+const DeleteChampionshipModal = ({
   isOpen,
   onClose,
   onConfirm,
-  match,
+  championship,
   isDeleting = false,
-}: DeleteMatchModalProps) => {
+}: DeleteChampionshipModalProps) => {
   const [error, setError] = useState<string | null>(null);
 
   const handleConfirm = async () => {
@@ -28,24 +28,32 @@ const DeleteMatchModal = ({
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Não foi possível excluir a partida. Verifique se a partida possui estatísticas de jogadores associadas.",
+          : "Não foi possível excluir a pelada. Verifique se há rodadas ou partidas associadas.",
       );
     }
   };
 
-  if (!match) return null;
+  if (!championship) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Excluir Partida">
+    <Modal isOpen={isOpen} onClose={onClose} title="Excluir Pelada">
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <p style={{ color: "#404040" }}>
-          Tem certeza que deseja excluir a partida{" "}
-          <span style={{ fontWeight: 600 }}>{match.name}</span>?
+          Tem certeza que deseja excluir a pelada{" "}
+          <span style={{ fontWeight: 600 }}>{championship.name}</span>?
         </p>
         <Alert variant="warning">
           <strong>Atenção:</strong> Esta ação não pode ser desfeita. Todas as
-          estatísticas de jogadores associadas a esta partida serão perdidas.
+          rodadas, times, partidas e estatísticas associadas a esta pelada
+          serão permanentemente excluídos.
         </Alert>
+        {championship.round_total > 0 && (
+          <Alert variant="info">
+            Esta pelada possui <strong>{championship.round_total}</strong>{" "}
+            rodada{championship.round_total !== 1 ? "s" : ""} cadastrada
+            {championship.round_total !== 1 ? "s" : ""}.
+          </Alert>
+        )}
         {error && <Alert variant="error">{error}</Alert>}
         <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
           <Button
@@ -73,4 +81,4 @@ const DeleteMatchModal = ({
   );
 };
 
-export default DeleteMatchModal;
+export default DeleteChampionshipModal;

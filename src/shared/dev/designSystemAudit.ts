@@ -2,8 +2,8 @@
  * Design System Audit Tool
  * 
  * Valida em tempo de execução (DEV) se todas as classes do design system
- * estão sendo geradas corretamente pelo Tailwind e se não estão sendo
- * sobrescritas por estilos da aplicação.
+ * estão sendo geradas corretamente pelo bundle de CSS do design system e se
+ * não estão sendo sobrescritas por estilos da aplicação.
  */
 
 interface ClassCheckResult {
@@ -23,6 +23,9 @@ interface ClassCheckResult {
 interface AuditResult {
   missingClasses: ClassCheckResult[];
   overriddenClasses: ClassCheckResult[];
+  missingVariables: string[];
+  cssBundleLoaded: boolean;
+  stylesheetSources: string[];
   allClassesChecked: number;
   passedChecks: number;
 }
@@ -188,6 +191,48 @@ const getAllClasses = (): string[] => {
   return Object.values(DESIGN_SYSTEM_CLASSES).flat();
 };
 
+const REQUIRED_CSS_VARIABLES = [
+  '--color-primary-600',
+  '--color-neutral-50',
+  '--spacing-4',
+  '--radius-lg',
+  '--shadow-default',
+];
+
+const getCssVariableValue = (variableName: string): string => {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(variableName)
+    .trim();
+};
+
+const getDesignSystemStylesheetSources = (): string[] => {
+  return Array.from(document.styleSheets)
+    .map((sheet) => sheet.href)
+    .filter((href): href is string => Boolean(href))
+    .filter(
+      (href) =>
+        href.includes('design-system') ||
+        href.includes('styles.css') ||
+        href.includes('css-variables'),
+    );
+};
+
+const auditCssVariables = (): {
+  missingVariables: string[];
+  cssBundleLoaded: boolean;
+  stylesheetSources: string[];
+} => {
+  const missingVariables = REQUIRED_CSS_VARIABLES.filter(
+    (variable) => getCssVariableValue(variable) === '',
+  );
+
+  return {
+    missingVariables,
+    cssBundleLoaded: missingVariables.length === 0,
+    stylesheetSources: getDesignSystemStylesheetSources(),
+  };
+};
+
 const checkClassExists = (className: string): boolean => {
   // Cria elemento temporário para testar se a classe existe no CSS
   const testEl = document.createElement('div');
@@ -313,6 +358,7 @@ const auditDesignSystem = (): AuditResult => {
   const allClasses = getAllClasses();
   const missingClasses: ClassCheckResult[] = [];
   const overriddenClasses: ClassCheckResult[] = [];
+  const { missingVariables, cssBundleLoaded, stylesheetSources } = auditCssVariables();
   
   console.group('🎨 Design System Audit');
   console.log(`Verificando ${allClasses.length} classes...\n`);
@@ -347,7 +393,8 @@ const auditDesignSystem = (): AuditResult => {
     }
   });
   
-  const passedChecks = allClasses.length - missingClasses.length - overriddenClasses.length;
+  const passedChecks =
+    allClasses.length - missingClasses.length - overriddenClasses.length;
   
   // Log resultados
   if (missingClasses.length > 0) {
@@ -370,8 +417,30 @@ const auditDesignSystem = (): AuditResult => {
     });
     console.groupEnd();
   }
+
+  if (!cssBundleLoaded) {
+    console.group('❌ Variáveis do design system não encontradas');
+    missingVariables.forEach((variable) => {
+      console.warn(`  • ${variable}`);
+    });
+    console.groupEnd();
+  }
+
+  if (stylesheetSources.length === 0) {
+    console.warn('⚠️ Nenhuma folha de estilo do design system foi detectada.');
+  } else {
+    console.group('✅ Folhas de estilo detectadas');
+    stylesheetSources.forEach((href) => {
+      console.log(`  • ${href}`);
+    });
+    console.groupEnd();
+  }
   
-  if (missingClasses.length === 0 && overriddenClasses.length === 0) {
+  if (
+    missingClasses.length === 0 &&
+    overriddenClasses.length === 0 &&
+    cssBundleLoaded
+  ) {
     console.log('✅ Todas as classes do design system estão funcionando corretamente!');
   }
   
@@ -380,11 +449,15 @@ const auditDesignSystem = (): AuditResult => {
   console.log(`  • OK: ${passedChecks}`);
   console.log(`  • Faltando: ${missingClasses.length}`);
   console.log(`  • Sobrescritas: ${overriddenClasses.length}`);
+  console.log(`  • Variáveis faltando: ${missingVariables.length}`);
   console.groupEnd();
   
   return {
     missingClasses,
     overriddenClasses,
+    missingVariables,
+    cssBundleLoaded,
+    stylesheetSources,
     allClassesChecked: allClasses.length,
     passedChecks,
   };

@@ -1,8 +1,8 @@
 import { FormEvent, useEffect } from "react";
-import BaseModal from "@/shared/components/modal/BaseModal";
+import { Modal, Button, Alert } from "@platform/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
-import { Match, Team } from "@/types";
+import { Match } from "@/types";
 
 interface TeamOption {
   id: number;
@@ -106,73 +106,84 @@ const EditMatchModal = ({
     !hasChanges;
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Editar Partida"
-      formId="edit-match-form"
-      isSubmitting={isSubmitting}
-      submitDisabled={submitDisabled}
-      submitLabel="Salvar Alterações"
-    >
-      <form id="edit-match-form" onSubmit={handleSubmit}>
-        <FormInput
-          label="Nome da Partida"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Ex: Final do Campeonato"
-          required
-        />
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Editar Partida">
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <form id="edit-match-form" onSubmit={handleSubmit}>
           <FormInput
-            label="Time 1"
-            name="team_1_id"
-            value={formData.team_1_id}
+            label="Nome da Partida"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
-            placeholder="Selecione um time"
-            type="select"
-            options={teams.map((team) => ({ id: team.id, name: team.name }))}
+            placeholder="Ex: Final do Campeonato"
             required
           />
-          <FormInput
-            label="Time 2"
-            name="team_2_id"
-            value={formData.team_2_id}
-            onChange={handleChange}
-            placeholder="Selecione um time"
-            type="select"
-            options={teams.map((team) => ({ id: team.id, name: team.name }))}
-            required
-          />
-        </div>
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormInput
-            label="Gols do Time 1"
-            name="team_1_goals"
-            value={formData.team_1_goals}
-            onChange={handleChange}
-            placeholder="0"
-            type="number"
-            min="0"
-          />
-          <FormInput
-            label="Gols do Time 2"
-            name="team_2_goals"
-            value={formData.team_2_goals}
-            onChange={handleChange}
-            placeholder="0"
-            type="number"
-            min="0"
-          />
-        </div>
-        {error && (
-          <div className="mb-6 rounded-lg border border-error-100 bg-error-50 p-3">
-            <span className="text-sm text-error-600">{error}</span>
+          <div style={{ marginBottom: "1.5rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+            <FormInput
+              label="Time 1"
+              name="team_1_id"
+              value={formData.team_1_id}
+              onChange={handleChange}
+              placeholder="Selecione um time"
+              type="select"
+              options={teams.map((team) => ({ id: team.id, name: team.name }))}
+              required
+            />
+            <FormInput
+              label="Time 2"
+              name="team_2_id"
+              value={formData.team_2_id}
+              onChange={handleChange}
+              placeholder="Selecione um time"
+              type="select"
+              options={teams.map((team) => ({ id: team.id, name: team.name }))}
+              required
+            />
           </div>
-        )}
-      </form>
-    </BaseModal>
+          <div style={{ marginBottom: "1.5rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+            <FormInput
+              label="Gols do Time 1"
+              name="team_1_goals"
+              value={formData.team_1_goals}
+              onChange={handleChange}
+              placeholder="0"
+              type="number"
+              min="0"
+            />
+            <FormInput
+              label="Gols do Time 2"
+              name="team_2_goals"
+              value={formData.team_2_goals}
+              onChange={handleChange}
+              placeholder="0"
+              type="number"
+              min="0"
+            />
+          </div>
+          {error && <Alert variant="error">{error}</Alert>}
+        </form>
+        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            aria-label="Cancelar"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            form="edit-match-form"
+            loading={isSubmitting}
+            disabled={submitDisabled}
+            aria-label="Salvar Alterações"
+          >
+            Salvar Alterações
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 };
 

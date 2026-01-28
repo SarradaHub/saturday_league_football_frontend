@@ -9,10 +9,9 @@ import championshipRepository from "@/features/championships/api/championshipRep
 import CreateChampionshipModal, {
   ChampionshipPayload,
 } from "@/features/championships/components/CreateChampionshipModal";
-import Container from "@/shared/components/layout/Container";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { Alert, Button } from "@sarradahub/design-system";
-import { colors } from "@sarradahub/design-system/tokens";
+import { Alert, Button, Card, CardHeader, CardTitle, CardContent, Container } from "@platform/design-system";
+import { colors } from "@platform/design-system/tokens";
 import { Championship } from "@/types";
 
 const queryKeys = {
@@ -75,7 +74,7 @@ const ChampionshipListPage = () => {
 
   if (isLoading) {
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
         <LoadingSpinner size="lg" text="Carregando peladas..." />
       </div>
     );
@@ -85,7 +84,7 @@ const ChampionshipListPage = () => {
     const message =
       error instanceof Error ? error.message : "Ocorreu um erro inesperado.";
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
         <Alert variant="error" title="Erro ao carregar peladas">
           {message}
         </Alert>
@@ -94,12 +93,12 @@ const ChampionshipListPage = () => {
   }
 
   return (
-    <div className="mt-24 min-h-screen bg-neutral-50 py-8 font-sans">
+    <div style={{ marginTop: "6rem", minHeight: "100vh", backgroundColor: "#fafafa", padding: "2rem 0" }}>
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <div className="md:col-span-12 mb-8 flex items-center justify-between">
-            <h1 className="flex items-center gap-2 text-3xl font-bold text-neutral-900">
-              <FaTrophy className="text-warning-500" aria-hidden />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "1.5rem" }}>
+          <div style={{ gridColumn: "span 12", marginBottom: "2rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h1 style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.875rem", fontWeight: 700, color: "#171717" }}>
+              <FaTrophy style={{ color: "#f59e0b" }} aria-hidden />
               Peladas Cadastradas
             </h1>
             <Button
@@ -107,9 +106,9 @@ const ChampionshipListPage = () => {
               onClick={() => setIsModalOpen(true)}
               variant="primary"
               size="lg"
+              leftIcon={FaPlus}
               aria-label="Criar nova pelada"
             >
-              <FaPlus aria-hidden="true" className="mr-2" />
               Nova Pelada
             </Button>
           </div>
@@ -117,40 +116,48 @@ const ChampionshipListPage = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="md:col-span-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+              style={{ gridColumn: "span 12", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}
             >
               {championships.map((championship: Championship) => (
-                <motion.button
+                <motion.div
                   key={championship.id}
-                  type="button"
-                  onClick={() => handleCardClick(championship.id)}
                   whileHover={{ scale: 1.02 }}
-                  className="h-full rounded-xl bg-neutral-50 p-6 text-left shadow-md transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold text-neutral-900">
-                      {championship.name}
-                    </h3>
-                    <span className="rounded-full bg-primary-100 px-3 py-1 text-sm text-primary-800">
-                      {championship.round_total} rodadas
-                    </span>
-                  </div>
-                  {championship.description && (
-                    <p className="mt-4 text-sm text-neutral-600">
-                      {championship.description}
-                    </p>
-                  )}
-                  <div className="mt-6 flex items-center justify-between text-sm text-neutral-500">
-                    <span>{championship.total_players} jogadores</span>
-                    <span>ID #{championship.id}</span>
-                  </div>
-                </motion.button>
+                  <Card
+                    variant="elevated"
+                    padding="lg"
+                    style={{ height: "100%", cursor: "pointer" }}
+                    onClick={() => handleCardClick(championship.id)}
+                  >
+                    <CardHeader>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <CardTitle>{championship.name}</CardTitle>
+                        <span style={{ borderRadius: "9999px", backgroundColor: "#dbeafe", padding: "0.25rem 0.75rem", fontSize: "0.875rem", color: "#1e40af" }}>
+                          {championship.round_total} rodadas
+                        </span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {championship.description && (
+                        <p style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#737373" }}>
+                          {championship.description}
+                        </p>
+                      )}
+                      <div style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.875rem", color: "#737373" }}>
+                        <span>{championship.total_players} jogadores</span>
+                        <span>ID #{championship.id}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
             </motion.div>
           ) : (
-            <div className="md:col-span-12 rounded-lg bg-neutral-50 py-12 text-center text-neutral-500 shadow-sm">
-              Nenhuma pelada cadastrada ainda.
-            </div>
+            <Card variant="outlined" padding="lg" style={{ gridColumn: "span 12", textAlign: "center", color: "#737373", padding: "3rem" }}>
+              <CardContent>
+                Nenhuma pelada cadastrada ainda.
+              </CardContent>
+            </Card>
           )}
         </div>
       </Container>

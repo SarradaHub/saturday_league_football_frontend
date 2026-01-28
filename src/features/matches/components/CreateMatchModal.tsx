@@ -1,5 +1,5 @@
 import { FormEvent, useEffect } from "react";
-import BaseModal from "@/shared/components/modal/BaseModal";
+import { Modal, Button, Alert } from "@platform/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 
@@ -77,53 +77,64 @@ const CreateMatchModal = ({
     formData.team_1_id === formData.team_2_id;
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Criar Nova Partida"
-      formId="match-form"
-      isSubmitting={isSubmitting}
-      submitDisabled={submitDisabled}
-      submitLabel="Criar Partida"
-    >
-      <form id="match-form" onSubmit={handleSubmit}>
-        <FormInput
-          label="Nome da Partida"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Ex: Final do Campeonato"
-          required
-        />
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Criar Nova Partida">
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <form id="match-form" onSubmit={handleSubmit}>
           <FormInput
-            label="Time 1"
-            name="team_1_id"
-            value={formData.team_1_id}
+            label="Nome da Partida"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
-            placeholder="Selecione um time"
-            type="select"
-            options={teams.map((team) => ({ id: team.id, name: team.name }))}
+            placeholder="Ex: Final do Campeonato"
             required
           />
-          <FormInput
-            label="Time 2"
-            name="team_2_id"
-            value={formData.team_2_id}
-            onChange={handleChange}
-            placeholder="Selecione um time"
-            type="select"
-            options={teams.map((team) => ({ id: team.id, name: team.name }))}
-            required
-          />
-        </div>
-        {error && (
-          <div className="mb-6 rounded-lg border border-error-100 bg-error-50 p-3">
-            <span className="text-sm text-error-600">{error}</span>
+          <div style={{ marginBottom: "1.5rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+            <FormInput
+              label="Time 1"
+              name="team_1_id"
+              value={formData.team_1_id}
+              onChange={handleChange}
+              placeholder="Selecione um time"
+              type="select"
+              options={teams.map((team) => ({ id: team.id, name: team.name }))}
+              required
+            />
+            <FormInput
+              label="Time 2"
+              name="team_2_id"
+              value={formData.team_2_id}
+              onChange={handleChange}
+              placeholder="Selecione um time"
+              type="select"
+              options={teams.map((team) => ({ id: team.id, name: team.name }))}
+              required
+            />
           </div>
-        )}
-      </form>
-    </BaseModal>
+          {error && <Alert variant="error">{error}</Alert>}
+        </form>
+        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            aria-label="Cancelar"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            form="match-form"
+            loading={isSubmitting}
+            disabled={submitDisabled}
+            aria-label="Criar Partida"
+          >
+            Criar Partida
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 };
 

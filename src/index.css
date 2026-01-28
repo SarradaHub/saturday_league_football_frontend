@@ -1,9 +1,0 @@
-@source "../../platform/design-system/src/**/*.{js,ts,jsx,tsx}";
-@source "../../platform/design-system/dist/**/*.{js,ts,jsx,tsx}";
-@config "../tailwind.config.js";
-@import "tailwindcss";
-@import "@sarradahub/design-system/css";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;

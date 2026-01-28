@@ -1,7 +1,9 @@
 import { Suspense, lazy } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
+import ProtectedRoute from "@/features/auth/components/ProtectedRoute";
 
+const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const HomePage = lazy(() => import("@/features/home/pages/HomePage"));
 const ChampionshipListPage = lazy(
   () => import("@/features/championships/pages/ChampionshipListPage"),
@@ -23,7 +25,7 @@ const TeamDetailsPage = lazy(
 );
 
 const LoadingScreen = () => (
-  <div className="flex min-h-[60vh] items-center justify-center">
+  <div style={{ display: "flex", minHeight: "60vh", alignItems: "center", justifyContent: "center" }}>
     <LoadingSpinner size="lg" text="Carregando conteúdo..." />
   </div>
 );
@@ -32,12 +34,57 @@ const AppRoutes = () => (
   <Suspense fallback={<LoadingScreen />}>
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/championships" element={<ChampionshipListPage />} />
-      <Route path="/championships/:id" element={<ChampionshipDetailsPage />} />
-      <Route path="/rounds/:id" element={<RoundDetailsPage />} />
-      <Route path="/matches/:id" element={<MatchDetailsPage />} />
-      <Route path="/players/:id" element={<PlayerDetailsPage />} />
-      <Route path="/teams/:id" element={<TeamDetailsPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/championships"
+        element={
+          <ProtectedRoute>
+            <ChampionshipListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/championships/:id"
+        element={
+          <ProtectedRoute>
+            <ChampionshipDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rounds/:id"
+        element={
+          <ProtectedRoute>
+            <RoundDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/matches/:id"
+        element={
+          <ProtectedRoute>
+            <MatchDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/players/:id"
+        element={
+          <ProtectedRoute>
+            <PlayerDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teams/:id"
+        element={
+          <ProtectedRoute>
+            <TeamDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* Catch-all route: redireciona qualquer rota não encontrada para HomePage */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </Suspense>
 );

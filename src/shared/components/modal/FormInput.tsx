@@ -1,5 +1,5 @@
 import { ChangeEvent, InputHTMLAttributes } from "react";
-import { Input, Textarea, Select } from "@sarradahub/design-system";
+import { Input, Textarea, Select } from "@platform/design-system";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
@@ -17,6 +17,7 @@ interface FormInputProps {
   rows?: number;
   inputProps?: InputHTMLAttributes<HTMLInputElement>;
   error?: string;
+  min?: string;
 }
 
 const FormInput = ({
@@ -31,6 +32,7 @@ const FormInput = ({
   rows = 3,
   inputProps = {},
   error,
+  min,
 }: FormInputProps) => {
   const renderField = () => {
     if (type === "textarea") {
@@ -88,12 +90,13 @@ const FormInput = ({
         required={required}
         error={error}
         label={label}
+        {...(min ? { min } : {})}
         {...inputProps}
       />
     );
   };
 
-  return <div className="mb-6">{renderField()}</div>;
+  return <div style={{ marginBottom: "1.5rem" }}>{renderField()}</div>;
 };
 
 export default FormInput;

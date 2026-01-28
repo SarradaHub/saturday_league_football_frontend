@@ -11,9 +11,9 @@ import playerStatsRepository from "@/features/player-stats/api/playerStatsReposi
 import EditMatchModal from "@/features/matches/components/EditMatchModal";
 import EditMatchStatsModal from "@/features/matches/components/EditMatchStatsModal";
 import DeleteMatchModal from "@/features/matches/components/DeleteMatchModal";
-import Container from "@/shared/components/layout/Container";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { colors } from "@sarradahub/design-system/tokens";
+import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@platform/design-system";
+import { colors } from "@platform/design-system/tokens";
 import { Match, Player } from "@/types";
 
 const queryKeys = {
@@ -121,8 +121,8 @@ const MatchDetailsPage = () => {
 
       return matchRepository.updateMatch(id, {
         name: data.name,
-        team_1_id: data.team_1_id,
-        team_2_id: data.team_2_id,
+        team_1: { id: data.team_1_id } as Match["team_1"],
+        team_2: { id: data.team_2_id } as Match["team_2"],
         winning_team: winningTeamId
           ? { id: winningTeamId } as Match["winning_team"]
           : null,
@@ -178,7 +178,10 @@ const MatchDetailsPage = () => {
       assists: number;
       own_goals: number;
       was_goalkeeper: boolean;
-    }>) => playerStatsRepository.bulkUpdate(matchId, playerStats),
+    }>) => playerStatsRepository.bulkUpdate(matchId, playerStats.map(stat => ({
+      ...stat,
+      match_id: matchId,
+    }))),
     onSuccess: async () => {
       setToast({ open: true, message: "Estatísticas atualizadas com sucesso!" });
       setIsEditStatsModalOpen(false);
@@ -235,17 +238,15 @@ const MatchDetailsPage = () => {
 
   if (!Number.isFinite(matchId)) {
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-error-50 px-4 py-3 text-error-600">
-          Identificador de partida inválido.
-        </span>
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <Alert variant="error">Identificador de partida inválido.</Alert>
       </div>
     );
   }
 
   if (isLoading || isLoadingRound) {
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
         <LoadingSpinner size="lg" text="Carregando..." />
       </div>
     );
@@ -259,126 +260,116 @@ const MatchDetailsPage = () => {
           ? "Ocorreu um erro inesperado."
           : "Partida não encontrada.";
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-error-50 px-4 py-3 text-error-600">
-          {message}
-        </span>
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <Alert variant="error">{message}</Alert>
       </div>
     );
   }
 
   return (
-    <div className="mt-24 min-h-screen bg-neutral-50 py-8 font-sans">
+    <div style={{ marginTop: "6rem", minHeight: "100vh", backgroundColor: "#fafafa", padding: "2rem 0" }}>
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-              <div>
-                <button
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "1.5rem" }}>
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", flex: 1 }}>
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => navigate(-1)}
-                  className="mb-4 inline-flex items-center gap-2 text-neutral-600 transition hover:text-neutral-800"
+                  leftIcon={FaArrowLeft}
                 >
-                  <FaArrowLeft aria-hidden />
                   Voltar
-                </button>
-                <h1 className="text-3xl font-bold text-neutral-900">
-                  {match.name}
-                </h1>
-                <p className="text-neutral-600">
-                  {format(new Date(match.created_at), "dd MMMM yyyy")}
-                </p>
+                </Button>
+                <CardHeader>
+                  <CardTitle style={{ fontSize: "1.875rem" }}>{match.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p style={{ color: "#737373" }}>
+                    {format(new Date(match.created_at), "dd MMMM yyyy")}
+                  </p>
+                </CardContent>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="inline-flex items-center gap-2 rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-800">
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", borderRadius: "9999px", backgroundColor: "#dbeafe", padding: "0.5rem 1rem", fontSize: "0.875rem", fontWeight: 500, color: "#1e40af" }}>
                   <FaFutbol aria-hidden />
                   Rodada #{match.round_id}
                 </span>
-                <div className="flex gap-2">
-                  <button
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={() => setIsEditStatsModalOpen(true)}
-                    disabled={
-                      !team1?.players?.length || !team2?.players?.length
-                    }
-                    className="inline-flex items-center gap-2 rounded-lg bg-success-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-success-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-success-600"
+                    disabled={!team1?.players?.length || !team2?.players?.length}
+                    leftIcon={FaChartLine}
                     aria-label="Editar estatísticas"
-                    title={
-                      !team1?.players?.length || !team2?.players?.length
-                        ? "Adicione jogadores aos times para editar estatísticas"
-                        : "Editar estatísticas da partida"
-                    }
+                    title={!team1?.players?.length || !team2?.players?.length ? "Adicione jogadores aos times para editar estatísticas" : "Editar estatísticas da partida"}
                   >
-                    <FaChartLine aria-hidden />
                     Estatísticas
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={() => finalizeMatchMutation.mutate()}
-                    disabled={
-                      !team1?.goals && !team2?.goals || 
-                      finalizeMatchMutation.isPending ||
-                      match?.winning_team !== null && !match?.draw
-                    }
-                    className="inline-flex items-center gap-2 rounded-lg bg-warning-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-warning-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-warning-600"
+                    disabled={(!team1?.goals && !team2?.goals) || finalizeMatchMutation.isPending || (match?.winning_team !== null && !match?.draw)}
+                    loading={finalizeMatchMutation.isPending}
+                    leftIcon={FaTrophy}
                     aria-label="Finalizar partida"
-                    title={
-                      match?.winning_team !== null && !match?.draw
-                        ? "Partida já finalizada"
-                        : !team1?.goals && !team2?.goals
-                          ? "Adicione estatísticas antes de finalizar"
-                          : "Finalizar partida e definir vencedor"
-                    }
+                    title={match?.winning_team !== null && !match?.draw ? "Partida já finalizada" : !team1?.goals && !team2?.goals ? "Adicione estatísticas antes de finalizar" : "Finalizar partida e definir vencedor"}
                   >
-                    <FaTrophy aria-hidden />
                     {finalizeMatchMutation.isPending ? "Finalizando..." : "Finalizar"}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={() => setIsEditModalOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-700"
+                    leftIcon={FaEdit}
                     aria-label="Editar partida"
                   >
-                    <FaEdit aria-hidden />
                     Editar
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="danger"
+                    size="sm"
                     onClick={() => setIsDeleteModalOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-lg bg-error-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-error-700"
+                    leftIcon={FaTrash}
                     aria-label="Excluir partida"
                   >
-                    <FaTrash aria-hidden />
                     Excluir
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
-          </section>
+          </Card>
 
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <div className="grid gap-8 md:grid-cols-3">
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "2rem" }}>
               <TeamColumn team={team1} align="right" />
-              <div className="flex flex-col items-center justify-center text-center">
-                <span className="text-sm uppercase text-neutral-500">Placar</span>
-                <div className="mt-2 text-5xl font-bold text-neutral-900">
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+                <span style={{ fontSize: "0.875rem", textTransform: "uppercase", color: "#737373" }}>Placar</span>
+                <div style={{ marginTop: "0.5rem", fontSize: "3rem", fontWeight: 700, color: "#171717" }}>
                   {team1.goals}{" "}
-                  <span className="mx-1 text-3xl text-neutral-400">x</span>{" "}
+                  <span style={{ margin: "0 0.25rem", fontSize: "1.875rem", color: "#a3a3a3" }}>x</span>{" "}
                   {team2.goals}
                 </div>
                 {match.winning_team ? (
-                  <span className="mt-2 rounded-full bg-success-100 px-4 py-1 text-sm font-semibold text-success-700">
+                  <span style={{ marginTop: "0.5rem", borderRadius: "9999px", backgroundColor: "#dcfce7", padding: "0.25rem 1rem", fontSize: "0.875rem", fontWeight: 600, color: "#166534" }}>
                     Vitória: {match.winning_team.name}
                   </span>
                 ) : (
-                  <span className="mt-2 rounded-full bg-warning-100 px-4 py-1 text-sm font-semibold text-warning-700">
+                  <span style={{ marginTop: "0.5rem", borderRadius: "9999px", backgroundColor: "#fef3c7", padding: "0.25rem 1rem", fontSize: "0.875rem", fontWeight: 600, color: "#92400e" }}>
                     Empate
                   </span>
                 )}
               </div>
               <TeamColumn team={team2} align="left" />
             </div>
-          </section>
+          </Card>
         </div>
       </Container>
 
@@ -442,8 +433,8 @@ interface TeamColumnProps {
 }
 
 const TeamColumn = ({ team, align }: TeamColumnProps) => {
-  const textAlign = align === "left" ? "text-left" : "text-right";
-  const flexDirection = align === "left" ? "items-start" : "items-end";
+  const textAlignStyle: React.CSSProperties = { textAlign: align === "left" ? "left" : "right" };
+  const alignItemsStyle: React.CSSProperties = { alignItems: align === "left" ? "flex-start" : "flex-end" };
 
   const renderList = (
     title: string,
@@ -451,24 +442,24 @@ const TeamColumn = ({ team, align }: TeamColumnProps) => {
     emptyMessage: string,
   ) => (
     <div>
-      <h4 className={`text-sm font-semibold text-neutral-500 ${textAlign}`}>
+      <h4 style={{ fontSize: "0.875rem", fontWeight: 600, color: "#737373", ...textAlignStyle }}>
         {title}
       </h4>
       {players.length > 0 ? (
-        <ul className={`mt-2 space-y-2 ${textAlign}`}>
+        <ul style={{ marginTop: "0.5rem", listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "0.5rem", ...textAlignStyle }}>
           {players.map((player, index) => (
             <motion.li
               key={`${title}-${player.id}-${index}`}
               initial={{ opacity: 0, x: align === "left" ? -10 : 10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-sm text-neutral-700"
+              style={{ fontSize: "0.875rem", color: "#404040" }}
             >
               {player.name}
             </motion.li>
           ))}
         </ul>
       ) : (
-        <p className={`mt-2 text-sm text-neutral-400 ${textAlign}`}>
+        <p style={{ marginTop: "0.5rem", fontSize: "0.875rem", color: "#a3a3a3", ...textAlignStyle }}>
           {emptyMessage}
         </p>
       )}
@@ -476,10 +467,10 @@ const TeamColumn = ({ team, align }: TeamColumnProps) => {
   );
 
   return (
-    <div className={`space-y-6 ${textAlign}`}>
-      <div className={`flex flex-col ${flexDirection} gap-2`}>
-        <span className="text-xl font-semibold text-neutral-900">{team.name}</span>
-        <span className="text-3xl font-bold text-neutral-800">{team.goals}</span>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", ...textAlignStyle }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", ...alignItemsStyle }}>
+        <span style={{ fontSize: "1.25rem", fontWeight: 600, color: "#171717" }}>{team.name}</span>
+        <span style={{ fontSize: "1.875rem", fontWeight: 700, color: "#171717" }}>{team.goals}</span>
       </div>
       {renderList("Gols", team.goalsScorer, "Nenhum gol registrado.")}
       {renderList(
@@ -493,12 +484,12 @@ const TeamColumn = ({ team, align }: TeamColumnProps) => {
         "Nenhum gol contra registrado.",
       )}
       <div>
-        <h4 className={`text-sm font-semibold text-neutral-500 ${textAlign}`}>
+        <h4 style={{ fontSize: "0.875rem", fontWeight: 600, color: "#737373", ...textAlignStyle }}>
           Escalação
         </h4>
-        <ul className={`mt-2 space-y-1 ${textAlign}`}>
+        <ul style={{ marginTop: "0.5rem", listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "0.25rem", ...textAlignStyle }}>
           {team.players.map((player) => (
-            <li key={player.id} className="text-sm text-neutral-600">
+            <li key={player.id} style={{ fontSize: "0.875rem", color: "#737373" }}>
               {player.name}
             </li>
           ))}

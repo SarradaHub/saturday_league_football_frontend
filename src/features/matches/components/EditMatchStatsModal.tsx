@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import BaseModal from "@/shared/components/modal/BaseModal";
+import { Modal, Button, Alert, Card, CardHeader, CardTitle, CardContent } from "@platform/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 import { Match, Player, PlayerStat } from "@/types";
@@ -87,7 +87,6 @@ const EditMatchStatsModal = ({
   const {
     formData,
     setFormData,
-    handleChange,
     isSubmitting,
     resetForm,
   } = useModalForm(initialFormData);
@@ -199,15 +198,17 @@ const EditMatchStatsModal = ({
     if (!stat) return null;
 
     return (
-      <div
+      <Card
         key={key}
-        className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+        variant="outlined"
+        padding="md"
+        style={{ marginBottom: "1rem" }}
       >
-        <div className="mb-3 flex items-center justify-between">
-          <h4 className="font-semibold text-neutral-900">{player.name}</h4>
-          <span className="text-sm text-neutral-500">{teamName}</span>
+        <div style={{ marginBottom: "0.75rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h4 style={{ fontWeight: 600, color: "#171717" }}>{player.name}</h4>
+          <span style={{ fontSize: "0.875rem", color: "#737373" }}>{teamName}</span>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem" }}>
           <FormInput
             label="Gols"
             name={`${key}.goals`}
@@ -247,8 +248,8 @@ const EditMatchStatsModal = ({
             type="number"
             inputProps={{ min: 0 }}
           />
-          <div className="mb-6">
-            <label className="mb-2 block text-sm font-medium text-neutral-700">
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={{ marginBottom: "0.5rem", display: "block", fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}>
               Foi Goleiro
             </label>
             <input
@@ -259,71 +260,90 @@ const EditMatchStatsModal = ({
                 (newData[key] as PlayerStatFormData).was_goalkeeper = e.target.checked;
                 setFormData(newData);
               }}
-              className="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+              style={{ height: "1rem", width: "1rem", borderRadius: "0.25rem" }}
             />
           </div>
         </div>
-      </div>
+      </Card>
     );
   };
 
   return (
-    <BaseModal
+    <Modal
       isOpen={isOpen}
       onClose={handleClose}
       title="Editar Estatísticas da Partida"
-      formId="edit-match-stats-form"
-      isSubmitting={isSubmitting || isLoadingStats}
-      submitDisabled={isSubmitting || isLoadingStats}
-      submitLabel="Salvar Estatísticas"
-      size="7xl"
+      size="xl"
     >
-      <form id="edit-match-stats-form" onSubmit={handleSubmit}>
-        {isLoadingStats ? (
-          <div className="py-8 text-center text-neutral-500">
-            Carregando estatísticas...
-          </div>
-        ) : (
-          <>
-            <div className="mb-6">
-              <h3 className="mb-4 text-lg font-semibold text-neutral-900">
-                {match.team_1?.name}
-              </h3>
-              {team1Players.length > 0 ? (
-                <div className="space-y-4">
-                  {team1Players.map((player) =>
-                    renderPlayerRow(player, team1Id, match.team_1?.name ?? "")
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-neutral-500">Nenhum jogador no time 1</p>
-              )}
+      <div className="space-y-4">
+        <form id="edit-match-stats-form" onSubmit={handleSubmit}>
+          {isLoadingStats ? (
+            <div style={{ padding: "2rem 0", textAlign: "center", color: "#737373" }}>
+              Carregando estatísticas...
             </div>
-
-            <div className="mb-6">
-              <h3 className="mb-4 text-lg font-semibold text-neutral-900">
-                {match.team_2?.name}
-              </h3>
-              {team2Players.length > 0 ? (
-                <div className="space-y-4">
-                  {team2Players.map((player) =>
-                    renderPlayerRow(player, team2Id, match.team_2?.name ?? "")
+          ) : (
+            <>
+              <Card variant="outlined" padding="md" style={{ marginBottom: "1.5rem" }}>
+                <CardHeader>
+                  <CardTitle>{match.team_1?.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {team1Players.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                      {team1Players.map((player) =>
+                        renderPlayerRow(player, team1Id, match.team_1?.name ?? "")
+                      )}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: "0.875rem", color: "#737373" }}>Nenhum jogador no time 1</p>
                   )}
-                </div>
-              ) : (
-                <p className="text-sm text-neutral-500">Nenhum jogador no time 2</p>
-              )}
-            </div>
+                </CardContent>
+              </Card>
 
-            {error && (
-              <div className="mb-6 rounded-lg border border-error-100 bg-error-50 p-3">
-                <span className="text-sm text-error-600">{error}</span>
-              </div>
-            )}
-          </>
-        )}
-      </form>
-    </BaseModal>
+              <Card variant="outlined" padding="md" style={{ marginBottom: "1.5rem" }}>
+                <CardHeader>
+                  <CardTitle>{match.team_2?.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {team2Players.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                      {team2Players.map((player) =>
+                        renderPlayerRow(player, team2Id, match.team_2?.name ?? "")
+                      )}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: "0.875rem", color: "#737373" }}>Nenhum jogador no time 2</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {error && <Alert variant="error">{error}</Alert>}
+            </>
+          )}
+        </form>
+        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+            disabled={isSubmitting || isLoadingStats}
+            aria-label="Cancelar"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            form="edit-match-stats-form"
+            loading={isSubmitting || isLoadingStats}
+            disabled={isSubmitting || isLoadingStats}
+            aria-label="Salvar Estatísticas"
+          >
+            Salvar Estatísticas
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 };
 

@@ -1,4 +1,4 @@
-import { Button } from "@sarradahub/design-system";
+import { Button } from "@platform/design-system";
 import { Player } from "@/types";
 
 interface ActionButtonsProps {
@@ -18,7 +18,7 @@ const ActionButtons = ({
   onClose,
   onSubmit,
 }: ActionButtonsProps) => (
-  <div className="mt-8 flex justify-end gap-3">
+  <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
     <Button
       type="button"
       variant="secondary"

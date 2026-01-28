@@ -1,5 +1,6 @@
 import { FiFilter } from "react-icons/fi";
 import { format } from "date-fns";
+import { Label, Select, Button } from "@platform/design-system";
 import { Player, Round } from "@/types";
 
 interface RoundFilterSectionProps {
@@ -26,39 +27,34 @@ const RoundFilterSection = ({
   }
 
   return (
-    <div className="px-2 pt-2">
-      <div className="mb-2 flex items-center justify-between">
-        <label
-          htmlFor="round-filter-select"
-          className="text-sm font-medium text-neutral-700"
-        >
+    <div style={{ padding: "0.5rem 0.5rem 0 0.5rem" }}>
+      <div style={{ marginBottom: "0.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Label htmlFor="round-filter-select" style={{ fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}>
           Filtrar por rodada:
-        </label>
-        <button
+        </Label>
+        <Button
           type="button"
+          variant="text"
+          size="sm"
           onClick={onToggleFilter}
-          className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 transition hover:text-primary-700"
+          leftIcon={FiFilter}
         >
-          <FiFilter aria-hidden />
           {showRoundFilter ? "Ocultar" : "Mostrar"}
-        </button>
+        </Button>
       </div>
       {showRoundFilter && (
-        <div className="mb-4 space-y-1">
-          <select
+        <div style={{ marginBottom: "1rem", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+          <Select
             id="round-filter-select"
-            value={selectedRoundId ?? ""}
+            name="round-filter-select"
+            value={String(selectedRoundId ?? "")}
             onChange={(event) => onRoundChange(Number(event.target.value))}
-            className="w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
-          >
-            {rounds.map((round) => (
-              <option key={round.id} value={round.id}>
-                {round.name} ({format(new Date(round.round_date), "dd/MM/yyyy")}
-                )
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-neutral-500">
+            options={rounds.map((round) => ({
+              value: String(round.id),
+              label: `${round.name} (${format(new Date(round.round_date), "dd/MM/yyyy")})`,
+            }))}
+          />
+          <p style={{ fontSize: "0.75rem", color: "#737373" }}>
             Exibindo {existingPlayers.length} jogadores desta rodada.
           </p>
         </div>

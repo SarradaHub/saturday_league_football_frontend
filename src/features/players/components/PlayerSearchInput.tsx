@@ -1,5 +1,6 @@
 import { Player } from "@/types";
 import { FaSearch } from "react-icons/fa";
+import { Input } from "@platform/design-system";
 
 interface PlayerSearchInputProps {
   searchTerm: string;
@@ -22,9 +23,9 @@ const PlayerSearchInput = ({
   onSubmit,
   isLoading = false,
 }: PlayerSearchInputProps) => (
-  <div className="space-y-4">
-    <div className="relative">
-      <input
+  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div style={{ position: "relative" }}>
+      <Input
         type="text"
         value={searchTerm}
         onChange={(event) => onSearchChange(event.target.value)}
@@ -34,11 +35,11 @@ const PlayerSearchInput = ({
             ? `Adicionar ${selectedPlayer.name} ao ${context === "team" ? "time" : "round"}`
             : "Busque jogadores ou crie um novo"
         }
-        className="w-full rounded-lg border px-4 py-3 pl-10 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+        style={{ paddingLeft: "2.5rem", paddingRight: isLoading ? "6rem" : "1rem" }}
       />
-      <FaSearch className="absolute left-3 top-3.5 text-neutral-400" aria-hidden />
+      <FaSearch style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", color: "#a3a3a3", pointerEvents: "none" }} aria-hidden />
       {isLoading && (
-        <span className="absolute right-3 top-3.5 text-sm text-neutral-500">
+        <span style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", fontSize: "0.875rem", color: "#737373" }}>
           Carregando...
         </span>
       )}
@@ -46,7 +47,7 @@ const PlayerSearchInput = ({
     {!selectedPlayer && searchTerm && (
       <div
         role="listbox"
-        className="max-h-60 overflow-y-auto rounded-lg border bg-neutral-50 shadow-lg"
+        style={{ maxHeight: "15rem", overflowY: "auto", borderRadius: "0.5rem", border: "1px solid #e5e5e5", backgroundColor: "#fafafa", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
       >
         {filteredPlayers.length > 0 ? (
           filteredPlayers.map((player) => (
@@ -56,13 +57,15 @@ const PlayerSearchInput = ({
               role="option"
               aria-selected={false}
               onClick={() => onSelectPlayer(player)}
-              className="w-full border-b px-3 py-2 text-left text-sm transition hover:bg-neutral-50"
+              style={{ width: "100%", borderBottom: "1px solid #e5e5e5", padding: "0.5rem 0.75rem", textAlign: "left", fontSize: "0.875rem", transition: "background-color 0.2s", backgroundColor: "transparent", borderLeft: "none", borderRight: "none", borderTop: "none", cursor: "pointer" }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafafa"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
             >
               {player.name}
             </button>
           ))
         ) : (
-          <div className="px-3 py-2 text-sm text-neutral-500">
+          <div style={{ padding: "0.5rem 0.75rem", fontSize: "0.875rem", color: "#737373" }}>
             {isLoading
               ? "Carregando jogadores..."
               : "Nenhum jogador encontrado"}

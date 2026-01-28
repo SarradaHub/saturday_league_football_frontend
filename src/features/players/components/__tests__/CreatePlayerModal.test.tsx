@@ -29,25 +29,22 @@ vi.mock("@/features/players/api/playerRepository", () => ({
   },
 }));
 
-vi.mock("@/shared/components/modal/BaseModal", () => ({
-  default: ({ isOpen, onClose, title, children, submitLabel, formId, submitDisabled, isSubmitting }: { isOpen: boolean; onClose: () => void; title?: string; children: ReactNode; submitLabel?: string; formId?: string; submitDisabled?: boolean; isSubmitting?: boolean }) => {
+vi.mock("@platform/design-system", () => ({
+  Modal: ({ isOpen, onClose, title, children }: { isOpen: boolean; onClose: () => void; title?: string; children: ReactNode }) => {
     if (!isOpen) return null;
     return (
       <div data-testid="modal" role="dialog" aria-modal="true">
         {title && <h2>{title}</h2>}
         <button onClick={onClose} aria-label="Close modal">×</button>
         {children}
-        <div>
-          <button type="button" onClick={onClose} disabled={isSubmitting}>
-            Cancelar
-          </button>
-          <button type="submit" form={formId} disabled={submitDisabled || isSubmitting} aria-label={submitLabel}>
-            {submitLabel || "Submit"}
-          </button>
-        </div>
       </div>
     );
   },
+  Button: ({ children, disabled, loading, type, form, onClick, "aria-label": ariaLabel }: { children: ReactNode; disabled?: boolean; loading?: boolean; type?: string; form?: string; onClick?: () => void; "aria-label"?: string }) => (
+    <button type={type as "button" | "submit" | "reset"} form={form} disabled={disabled || loading} onClick={onClick} aria-label={ariaLabel}>
+      {children}
+    </button>
+  ),
 }));
 
 import CreatePlayerModal from "../CreatePlayerModal";

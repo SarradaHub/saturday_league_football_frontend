@@ -41,7 +41,7 @@ export default tseslint.config(
             {
               propName: "style",
               message:
-                "Use Tailwind classes or design system tokens instead of inline styles",
+                "Use design system components or tokens instead of inline styles",
             },
           ],
         },

@@ -20,9 +20,9 @@ import CreateMatchModal from "@/features/matches/components/CreateMatchModal";
 import CreatePlayerModal from "@/features/players/components/CreatePlayerModal";
 import CreateTeamModal from "@/features/teams/components/CreateTeamModal";
 import RoundStatisticsSection from "@/features/rounds/components/RoundStatisticsSection";
-import Container from "@/shared/components/layout/Container";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { colors } from "@sarradahub/design-system/tokens";
+import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert, Input } from "@platform/design-system";
+import { colors } from "@platform/design-system/tokens";
 import { Match, Player, Team } from "@/types";
 
 const queryKeys = {
@@ -151,17 +151,15 @@ const RoundDetailsPage = () => {
 
   if (!Number.isFinite(roundId)) {
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-error-50 px-4 py-3 text-error-600">
-          Identificador de rodada inválido.
-        </span>
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <Alert variant="error">Identificador de rodada inválido.</Alert>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
         <LoadingSpinner size="lg" text="Carregando..." />
       </div>
     );
@@ -175,228 +173,268 @@ const RoundDetailsPage = () => {
           ? "Ocorreu um erro inesperado."
           : "Rodada não encontrada.";
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-error-50 px-4 py-3 text-error-600">
-          {message}
-        </span>
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <Alert variant="error">{message}</Alert>
       </div>
     );
   }
 
   return (
-    <div className="mt-24 min-h-screen bg-neutral-50 py-8 font-sans">
+    <div style={{ marginTop: "6rem", minHeight: "100vh", backgroundColor: "#fafafa", padding: "2rem 0" }}>
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-              <div>
-                <button
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "1.5rem" }}>
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", flex: 1 }}>
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => navigate(-1)}
-                  className="mb-4 inline-flex items-center gap-2 text-neutral-600 transition hover:text-neutral-800"
+                  leftIcon={FaArrowLeft}
                 >
-                  <FaArrowLeft aria-hidden />
                   Voltar
-                </button>
-                <h1 className="text-3xl font-bold text-neutral-900">
-                  {round.name}
-                </h1>
-                <p className="text-neutral-600">
-                  {format(new Date(round.round_date), "dd MMMM yyyy")}
-                </p>
+                </Button>
+                <CardHeader>
+                  <CardTitle style={{ fontSize: "1.875rem" }}>{round.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p style={{ color: "#737373" }}>
+                    {format(new Date(round.round_date), "dd MMMM yyyy")}
+                  </p>
+                </CardContent>
               </div>
-              <span className="inline-flex items-center rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-800">
+              <span style={{ display: "inline-flex", alignItems: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", padding: "0.5rem 1rem", fontSize: "0.875rem", fontWeight: 500, color: "#1e40af" }}>
                 {matches.length} partidas
               </span>
             </div>
-          </section>
+          </Card>
 
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-2xl font-semibold text-neutral-900">
-                <FaFutbol className="text-success-500" aria-hidden />
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <CardTitle style={{ fontSize: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <FaFutbol style={{ color: "#16a34a" }} aria-hidden />
                 Partidas
-              </h2>
-              <button
+              </CardTitle>
+              <Button
                 type="button"
+                variant="primary"
+                size="md"
                 onClick={() => setMatchModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 font-medium text-white transition hover:bg-primary-700"
+                leftIcon={FaPlus}
               >
-                <FaPlus aria-hidden />
                 Criar Partida
-              </button>
+              </Button>
             </div>
-            {matches.length > 0 ? (
-              <div className="space-y-4">
-                {matches.map((match: Match) => (
-                  <motion.button
-                    key={match.id}
-                    type="button"
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="w-full rounded-xl border border-neutral-200 p-4 text-left transition hover:border-primary-200 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    onClick={() => navigate(`/matches/${match.id}`)}
-                  >
-                    <div className="flex items-center justify-between text-sm text-neutral-500">
-                      <span>
-                        {format(new Date(match.created_at), "dd/MM/yyyy")}
-                      </span>
-                      <span>{match.name}</span>
-                    </div>
-                    <div className="mt-3 grid grid-cols-3 items-center gap-4 text-center">
-                      <p className="font-medium text-right">
-                        {match.team_1.name}
-                      </p>
-                      <div className="text-2xl font-bold text-neutral-500">
-                        {match.team_1_goals} x {match.team_2_goals}
-                      </div>
-                      <p className="font-medium text-left">
-                        {match.team_2.name}
-                      </p>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            ) : (
-              <p className="rounded-lg border border-dashed border-neutral-200 p-6 text-center text-neutral-500">
-                Nenhuma partida cadastrada.
-              </p>
-            )}
-          </section>
+            <CardContent>
+              {matches.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  {matches.map((match: Match) => (
+                    <motion.div
+                      key={match.id}
+                      variants={itemVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      <Card
+                        variant="outlined"
+                        padding="md"
+                        style={{ cursor: "pointer", width: "100%" }}
+                        onClick={() => navigate(`/matches/${match.id}`)}
+                      >
+                        <CardContent>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.875rem", color: "#737373", marginBottom: "0.75rem" }}>
+                            <span>
+                              {format(new Date(match.created_at), "dd/MM/yyyy")}
+                            </span>
+                            <span>{match.name}</span>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", alignItems: "center", gap: "1rem", textAlign: "center" }}>
+                            <p style={{ fontWeight: 500, textAlign: "right" }}>
+                              {match.team_1.name}
+                            </p>
+                            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#737373" }}>
+                              {match.team_1_goals} x {match.team_2_goals}
+                            </div>
+                            <p style={{ fontWeight: 500, textAlign: "left" }}>
+                              {match.team_2.name}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <Card variant="outlined" padding="lg" style={{ textAlign: "center", color: "#737373" }}>
+                  <CardContent>
+                    Nenhuma partida cadastrada.
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
 
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-2xl font-semibold text-neutral-900">
-                <FaUser className="text-primary-500" aria-hidden />
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <CardTitle style={{ fontSize: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <FaUser style={{ color: "#2563eb" }} aria-hidden />
                 Jogadores
-              </h2>
-              <button
+              </CardTitle>
+              <Button
                 type="button"
+                variant="primary"
+                size="md"
                 onClick={() => setPlayerModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 font-medium text-white transition hover:bg-primary-700"
+                leftIcon={FaPlus}
               >
-                <FaPlus aria-hidden />
                 Adicionar Jogador
-              </button>
+              </Button>
             </div>
-            <div className="relative mb-6">
-              <input
+            <div style={{ marginBottom: "1.5rem", position: "relative" }}>
+              <Input
                 type="search"
                 value={playerSearch}
                 onChange={(event) => setPlayerSearch(event.target.value)}
                 placeholder="Buscar jogador..."
-                className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+                style={{ paddingLeft: "2.5rem" }}
               />
               <FaSearch
-                className="absolute left-3 top-3 text-neutral-400"
+                style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", color: "#a3a3a3", pointerEvents: "none" }}
                 aria-hidden
               />
             </div>
-            {filteredPlayers.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {filteredPlayers.map((player: Player) => (
-                  <motion.button
-                    key={player.id}
-                    type="button"
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-left transition hover:border-primary-200 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    onClick={() => navigate(`/players/${player.id}`)}
-                  >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-600">
-                      {player.name.charAt(0).toUpperCase()}
-                    </span>
-                    <div>
-                      <h3 className="font-semibold text-neutral-900">
-                        {player.name}
-                      </h3>
-                      <p className="text-sm text-neutral-500">
-                        Participou de {player.rounds?.length ?? 0} rodadas
-                      </p>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            ) : (
-              <p className="rounded-lg border border-dashed border-neutral-200 p-6 text-center text-neutral-500">
-                Nenhum jogador encontrado.
-              </p>
-            )}
-          </section>
+            <CardContent>
+              {filteredPlayers.length > 0 ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1rem" }}>
+                  {filteredPlayers.map((player: Player) => (
+                    <motion.div
+                      key={player.id}
+                      variants={itemVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      <Card
+                        variant="outlined"
+                        padding="md"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => navigate(`/players/${player.id}`)}
+                      >
+                        <CardContent>
+                          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                            <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.125rem", fontWeight: 700, color: "#2563eb" }}>
+                              {player.name.charAt(0).toUpperCase()}
+                            </span>
+                            <div>
+                              <h3 style={{ fontWeight: 600, color: "#171717" }}>
+                                {player.name}
+                              </h3>
+                              <p style={{ fontSize: "0.875rem", color: "#737373" }}>
+                                Participou de {player.rounds?.length ?? 0} rodadas
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <Card variant="outlined" padding="lg" style={{ textAlign: "center", color: "#737373" }}>
+                  <CardContent>
+                    Nenhum jogador encontrado.
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
 
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-2xl font-semibold text-neutral-900">
-                <FaUsers className="text-secondary-500" aria-hidden />
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <CardTitle style={{ fontSize: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <FaUsers style={{ color: "#a78bfa" }} aria-hidden />
                 Times
-              </h2>
-              <button
+              </CardTitle>
+              <Button
                 type="button"
+                variant="primary"
+                size="md"
                 onClick={() => setTeamModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 font-medium text-white transition hover:bg-primary-700"
+                leftIcon={FaPlus}
               >
-                <FaPlus aria-hidden />
                 Criar Time
-              </button>
+              </Button>
             </div>
-            <div className="relative mb-6">
-              <input
+            <div style={{ marginBottom: "1.5rem", position: "relative" }}>
+              <Input
                 type="search"
                 value={teamSearch}
                 onChange={(event) => setTeamSearch(event.target.value)}
                 placeholder="Buscar time..."
-                className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+                style={{ paddingLeft: "2.5rem" }}
               />
               <FaSearch
-                className="absolute left-3 top-3 text-neutral-400"
+                style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", color: "#a3a3a3", pointerEvents: "none" }}
                 aria-hidden
               />
             </div>
-            {filteredTeams.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {filteredTeams.map((team: Team) => (
-                  <motion.button
-                    key={team.id}
-                    type="button"
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-left transition hover:border-primary-200 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    onClick={() =>
-                      navigate(`/teams/${team.id}`, {
-                        state: { roundId },
-                      })
-                    }
-                  >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary-100 text-lg font-bold text-secondary-600">
-                      {team.name.charAt(0).toUpperCase()}
-                    </span>
-                    <div>
-                      <h3 className="font-semibold text-neutral-900">
-                        {team.name}
-                      </h3>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            ) : (
-              <p className="rounded-lg border border-dashed border-neutral-200 p-6 text-center text-neutral-500">
-                Nenhum time encontrado.
-              </p>
-            )}
-          </section>
+            <CardContent>
+              {filteredTeams.length > 0 ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1rem" }}>
+                  {filteredTeams.map((team: Team) => (
+                    <motion.div
+                      key={team.id}
+                      variants={itemVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      <Card
+                        variant="outlined"
+                        padding="md"
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          navigate(`/teams/${team.id}`, {
+                            state: { roundId },
+                          })
+                        }
+                      >
+                        <CardContent>
+                          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                            <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#ede9fe", fontSize: "1.125rem", fontWeight: 700, color: "#7c3aed" }}>
+                              {team.name.charAt(0).toUpperCase()}
+                            </span>
+                            <div>
+                              <h3 style={{ fontWeight: 600, color: "#171717" }}>
+                                {team.name}
+                              </h3>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <Card variant="outlined" padding="lg" style={{ textAlign: "center", color: "#737373" }}>
+                  <CardContent>
+                    Nenhum time encontrado.
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
 
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <div className="mb-6">
-              <h2 className="flex items-center gap-2 text-2xl font-semibold text-neutral-900">
-                <FaFutbol className="text-primary-500" aria-hidden />
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <CardHeader>
+              <CardTitle style={{ fontSize: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <FaFutbol style={{ color: "#2563eb" }} aria-hidden />
                 Estatísticas da Rodada
-              </h2>
-            </div>
-            <RoundStatisticsSection roundId={roundId} />
-          </section>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RoundStatisticsSection roundId={roundId} />
+            </CardContent>
+          </Card>
         </div>
       </Container>
 

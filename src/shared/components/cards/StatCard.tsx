@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
-import { Card, CardContent, cn } from "@sarradahub/design-system";
+import { Card, CardContent, cn } from "@platform/design-system";
 
 interface StatCardProps extends Omit<HTMLMotionProps<"div">, "children"> {
   title: string;
@@ -24,17 +24,15 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
       <Card
         variant="elevated"
         padding="md"
-        className={cn(
-          "flex items-center justify-between border-l-4",
-          accentColorClassName,
-        )}
+        className={cn(accentColorClassName)}
+        style={{ borderLeft: "4px solid", display: "flex", alignItems: "center", justifyContent: "space-between" }}
       >
-        <CardContent className="flex items-center justify-between w-full p-0">
+        <CardContent style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: 0 }}>
           <div>
-            <p className="text-sm text-neutral-500">{title}</p>
-            <p className="text-2xl font-bold text-neutral-900">{value}</p>
+            <p style={{ fontSize: "0.875rem", color: "#737373" }}>{title}</p>
+            <p style={{ fontSize: "1.5rem", fontWeight: 700, color: "#171717" }}>{value}</p>
           </div>
-          <div className="text-2xl text-neutral-700" aria-hidden="true">
+          <div style={{ fontSize: "1.5rem", color: "#404040" }} aria-hidden="true">
             {icon}
           </div>
         </CardContent>

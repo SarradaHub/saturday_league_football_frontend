@@ -1,4 +1,4 @@
-import { BaseService, PaginatedResponse, QueryParams } from "@/shared/api/baseService";
+import { BaseService, QueryParams } from "@/shared/api/baseService";
 import { Round } from "@/types";
 
 type UpsertRoundPayload = Partial<

@@ -31,9 +31,9 @@ import EditTeamModal from "@/features/teams/components/EditTeamModal";
 import DeleteTeamModal from "@/features/teams/components/DeleteTeamModal";
 import StatCard from "@/shared/components/cards/StatCard";
 import SearchInput from "@/shared/components/search/SearchInput";
-import Container from "@/shared/components/layout/Container";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { colors } from "@sarradahub/design-system/tokens";
+import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@platform/design-system";
+import { colors } from "@platform/design-system/tokens";
 import { Player } from "@/types";
 
 const queryKeys = {
@@ -191,17 +191,15 @@ const TeamDetailsPage = () => {
 
   if (!Number.isFinite(teamId)) {
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-error-50 px-4 py-3 text-error-600">
-          Identificador de time inválido.
-        </span>
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <Alert variant="error">Identificador de time inválido.</Alert>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
         <LoadingSpinner size="lg" text="Carregando..." />
       </div>
     );
@@ -215,73 +213,72 @@ const TeamDetailsPage = () => {
           ? "Ocorreu um erro inesperado."
           : "Time não encontrado.";
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-error-50 px-4 py-3 text-error-600">
-          {message}
-        </span>
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <Alert variant="error">{message}</Alert>
       </div>
     );
   }
 
   return (
-    <div className="mt-24 min-h-screen bg-neutral-50 py-8 font-sans">
+    <div style={{ marginTop: "6rem", minHeight: "100vh", backgroundColor: "#fafafa", padding: "2rem 0" }}>
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-              <div>
-                <button
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "1.5rem" }}>
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", flex: 1 }}>
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => navigate(-1)}
-                  className="mb-4 inline-flex items-center gap-2 text-neutral-600 transition hover:text-neutral-800"
+                  leftIcon={FaArrowLeft}
                 >
-                  <FaArrowLeft aria-hidden />
                   Voltar
-                </button>
-                <div className="flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-2xl font-bold text-primary-600">
+                </Button>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <div style={{ display: "flex", height: "4rem", width: "4rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.5rem", fontWeight: 700, color: "#2563eb" }}>
                     {team.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-neutral-900">
-                      {team.name}
-                    </h1>
-                    <p className="text-neutral-600">
+                    <CardTitle style={{ fontSize: "1.875rem" }}>{team.name}</CardTitle>
+                    <p style={{ color: "#737373" }}>
                       Criado em{" "}
                       {format(new Date(team.created_at), "dd MMMM yyyy")}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="inline-flex items-center rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-800">
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", padding: "0.5rem 1rem", fontSize: "0.875rem", fontWeight: 500, color: "#1e40af" }}>
                   {players.length} jogadores
                 </span>
-                <div className="flex gap-2">
-                  <button
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={() => setIsEditModalOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-700"
+                    leftIcon={FaEdit}
                     aria-label="Editar time"
                   >
-                    <FaEdit aria-hidden />
                     Editar
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="danger"
+                    size="sm"
                     onClick={() => setIsDeleteModalOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-lg bg-error-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-error-700"
+                    leftIcon={FaTrash}
                     aria-label="Excluir time"
                   >
-                    <FaTrash aria-hidden />
                     Excluir
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
-          </section>
+          </Card>
 
-          <section className="md:col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div style={{ gridColumn: "span 12", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
             <StatCard
               title="Total de Jogadores"
               value={stats.totalPlayers}
@@ -312,73 +309,85 @@ const TeamDetailsPage = () => {
               icon={<FaFutbol className="text-secondary-500" aria-hidden />}
               accentColorClassName="border-secondary-500"
             />
-          </section>
+          </div>
 
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ marginBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
-                <h2 className="text-2xl font-semibold text-neutral-900">
-                  Jogadores
-                </h2>
-                <p className="text-sm text-neutral-500">
+                <CardTitle style={{ fontSize: "1.5rem" }}>Jogadores</CardTitle>
+                <p style={{ fontSize: "0.875rem", color: "#737373", marginTop: "0.25rem" }}>
                   Selecione um jogador para ver detalhes individuais.
                 </p>
               </div>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", flexWrap: "wrap" }}>
                 <SearchInput
                   value={searchTerm}
                   onChange={setSearchTerm}
                   placeholder="Buscar jogador..."
                 />
-                <button
+                <Button
                   type="button"
+                  variant="primary"
+                  size="md"
                   onClick={() => setModalOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 font-medium text-white transition hover:bg-primary-700"
+                  leftIcon={FaPlus}
                 >
-                  <FaPlus aria-hidden />
                   Novo Jogador
-                </button>
+                </Button>
               </div>
             </div>
-            {filteredPlayers.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredPlayers.map((player: Player) => (
-                  <motion.button
-                    key={player.id}
-                    type="button"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-left transition hover:border-primary-200 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    onClick={() => navigate(`/players/${player.id}`)}
-                  >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-600">
-                      {player.name.charAt(0).toUpperCase()}
-                    </span>
-                    <div>
-                      <h3 className="font-semibold text-neutral-900">
-                        {player.name}
-                      </h3>
-                      <p className="text-sm text-neutral-500">
-                        Gols: {player.total_goals} • Assistências:{" "}
-                        {player.total_assists}
-                      </p>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            ) : (
-              <p className="rounded-lg border border-dashed border-neutral-200 p-6 text-center text-neutral-500">
-                Nenhum jogador encontrado.
-              </p>
-            )}
-          </section>
+            <CardContent>
+              {filteredPlayers.length > 0 ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1rem" }}>
+                  {filteredPlayers.map((player: Player) => (
+                    <motion.div
+                      key={player.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Card
+                        variant="outlined"
+                        padding="md"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => navigate(`/players/${player.id}`)}
+                      >
+                        <CardContent>
+                          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                            <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.125rem", fontWeight: 700, color: "#2563eb" }}>
+                              {player.name.charAt(0).toUpperCase()}
+                            </span>
+                            <div>
+                              <h3 style={{ fontWeight: 600, color: "#171717" }}>
+                                {player.name}
+                              </h3>
+                              <p style={{ fontSize: "0.875rem", color: "#737373" }}>
+                                Gols: {player.total_goals} • Assistências:{" "}
+                                {player.total_assists}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <Card variant="outlined" padding="lg" style={{ textAlign: "center", color: "#737373" }}>
+                  <CardContent>
+                    Nenhum jogador encontrado.
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
 
-          <section className="md:col-span-12 rounded-2xl bg-neutral-50 p-6 shadow-lg">
-            <h2 className="text-2xl font-semibold text-neutral-900">
-              Desempenho Aggregado
-            </h2>
-            {chartData.length > 0 ? (
-              <div className="mt-6 h-80 min-h-[320px] w-full">
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <CardHeader>
+              <CardTitle style={{ fontSize: "1.5rem" }}>Desempenho Aggregado</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chartData.length > 0 ? (
+                <div style={{ marginTop: "1.5rem", height: "20rem", minHeight: "320px", width: "100%" }}>
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -415,13 +424,16 @@ const TeamDetailsPage = () => {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
-            ) : (
-              <p className="mt-4 rounded-lg border border-dashed border-neutral-200 p-6 text-center text-neutral-500">
-                Estatísticas insuficientes para gerar gráficos.
-              </p>
-            )}
-          </section>
+                </div>
+              ) : (
+                <Card variant="outlined" padding="lg" style={{ marginTop: "1rem", textAlign: "center", color: "#737373" }}>
+                  <CardContent>
+                    Estatísticas insuficientes para gerar gráficos.
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </Container>
 

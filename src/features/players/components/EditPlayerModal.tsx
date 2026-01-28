@@ -1,5 +1,5 @@
 import { FormEvent, useEffect } from "react";
-import BaseModal from "@/shared/components/modal/BaseModal";
+import { Modal, Button, Alert } from "@platform/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 import { Player } from "@/types";
@@ -55,31 +55,42 @@ const EditPlayerModal = ({
   if (!player) return null;
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Editar Jogador"
-      formId="edit-player-form"
-      isSubmitting={isSubmitting}
-      submitDisabled={!formData.name.trim() || formData.name.trim() === player.name}
-      submitLabel="Salvar Alterações"
-    >
-      <form id="edit-player-form" onSubmit={handleSubmit}>
-        <FormInput
-          label="Nome do Jogador"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Ex: João Silva"
-          required
-        />
-        {error && (
-          <div className="mb-6 rounded-lg border border-error-100 bg-error-50 p-3">
-            <span className="text-sm text-error-600">{error}</span>
-          </div>
-        )}
-      </form>
-    </BaseModal>
+    <Modal isOpen={isOpen} onClose={handleClose} title="Editar Jogador">
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <form id="edit-player-form" onSubmit={handleSubmit}>
+          <FormInput
+            label="Nome do Jogador"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Ex: João Silva"
+            required
+          />
+          {error && <Alert variant="error">{error}</Alert>}
+        </form>
+        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            aria-label="Cancelar"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            form="edit-player-form"
+            loading={isSubmitting}
+            disabled={!formData.name.trim() || formData.name.trim() === player.name}
+            aria-label="Salvar Alterações"
+          >
+            Salvar Alterações
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 };
 

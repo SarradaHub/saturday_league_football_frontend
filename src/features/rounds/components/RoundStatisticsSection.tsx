@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaTrophy, FaMedal, FaFutbol, FaShieldAlt } from "react-icons/fa";
+import { FaTrophy, FaMedal, FaShieldAlt } from "react-icons/fa";
+import { Card, CardHeader, CardTitle, CardContent, Alert, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@platform/design-system";
 import roundRepository from "@/features/rounds/api/roundRepository";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 
@@ -103,7 +104,7 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
 
   if (isLoading) {
     return (
-      <div className="py-8 text-center">
+      <div style={{ padding: "2rem 0", textAlign: "center" }}>
         <LoadingSpinner size="md" text="Carregando estatísticas..." />
       </div>
     );
@@ -111,40 +112,45 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-error-100 bg-error-50 p-4 text-center text-error-600">
+      <Alert variant="error">
         Erro ao carregar estatísticas da rodada.
-      </div>
+      </Alert>
     );
   }
 
   if (!statistics || Object.keys(statistics).length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-neutral-200 p-6 text-center text-neutral-500">
-        Nenhuma estatística disponível para esta rodada.
-      </div>
+      <Card variant="outlined" padding="lg" style={{ textAlign: "center", color: "#737373" }}>
+        <CardContent>
+          Nenhuma estatística disponível para esta rodada.
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1rem" }}>
         {topScorer && topScorer.goals > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-xl border border-warning-200 bg-warning-50 p-4"
           >
-            <div className="flex items-center gap-3">
-              <FaTrophy className="text-2xl text-warning-600" />
-              <div>
-                <p className="text-sm font-medium text-warning-700">Artilheiro</p>
-                <p className="text-lg font-bold text-warning-900">
-                  {topScorer.player.name}
-                </p>
-                <p className="text-sm text-warning-600">{topScorer.goals} gols</p>
-              </div>
-            </div>
+            <Card variant="outlined" padding="md" style={{ borderColor: "#fbbf24", backgroundColor: "#fef3c7" }}>
+              <CardContent>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <FaTrophy style={{ fontSize: "1.5rem", color: "#d97706" }} />
+                  <div>
+                    <p style={{ fontSize: "0.875rem", fontWeight: 500, color: "#92400e" }}>Artilheiro</p>
+                    <p style={{ fontSize: "1.125rem", fontWeight: 700, color: "#78350f" }}>
+                      {topScorer.player.name}
+                    </p>
+                    <p style={{ fontSize: "0.875rem", color: "#d97706" }}>{topScorer.goals} gols</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 
@@ -153,18 +159,21 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-xl border border-neutral-200 bg-neutral-50 p-4"
           >
-            <div className="flex items-center gap-3">
-              <FaMedal className="text-2xl text-neutral-600" />
-              <div>
-                <p className="text-sm font-medium text-neutral-700">Mais Assists</p>
-                <p className="text-lg font-bold text-neutral-900">
-                  {topAssist.player.name}
-                </p>
-                <p className="text-sm text-neutral-600">{topAssist.assists} assists</p>
-              </div>
-            </div>
+            <Card variant="outlined" padding="md">
+              <CardContent>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <FaMedal style={{ fontSize: "1.5rem", color: "#737373" }} />
+                  <div>
+                    <p style={{ fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}>Mais Assists</p>
+                    <p style={{ fontSize: "1.125rem", fontWeight: 700, color: "#171717" }}>
+                      {topAssist.player.name}
+                    </p>
+                    <p style={{ fontSize: "0.875rem", color: "#737373" }}>{topAssist.assists} assists</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 
@@ -173,142 +182,143 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-xl border border-secondary-200 bg-secondary-50 p-4"
           >
-            <div className="flex items-center gap-3">
-              <FaShieldAlt className="text-2xl text-secondary-600" />
-              <div>
-                <p className="text-sm font-medium text-secondary-700">Mais Goleiro</p>
-                <p className="text-lg font-bold text-secondary-900">
-                  {topGoalkeeper.player.name}
-                </p>
-                <p className="text-sm text-secondary-600">
-                  {topGoalkeeper.goalkeeper_count} vez{topGoalkeeper.goalkeeper_count > 1 ? "es" : ""}
-                </p>
-              </div>
-            </div>
+            <Card variant="outlined" padding="md" style={{ borderColor: "#a78bfa", backgroundColor: "#ede9fe" }}>
+              <CardContent>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <FaShieldAlt style={{ fontSize: "1.5rem", color: "#7c3aed" }} />
+                  <div>
+                    <p style={{ fontSize: "0.875rem", fontWeight: 500, color: "#6d28d9" }}>Mais Goleiro</p>
+                    <p style={{ fontSize: "1.125rem", fontWeight: 700, color: "#5b21b6" }}>
+                      {topGoalkeeper.player.name}
+                    </p>
+                    <p style={{ fontSize: "0.875rem", color: "#7c3aed" }}>
+                      {topGoalkeeper.goalkeeper_count} vez{topGoalkeeper.goalkeeper_count > 1 ? "es" : ""}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
       </div>
 
       {/* Statistics Table */}
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
-        <table className="w-full">
-          <thead className="bg-neutral-50">
-            <tr>
-              <th
-                className="cursor-pointer px-4 py-3 text-left text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+      <Card variant="outlined" padding="none">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead
+                style={{ cursor: "pointer" }}
                 onClick={() => handleSort("player")}
               >
                 Jogador
                 {sortField === "player" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  <span style={{ marginLeft: "0.25rem" }}>{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
-              </th>
-              <th
-                className="cursor-pointer px-4 py-3 text-center text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+              </TableHead>
+              <TableHead
+                style={{ cursor: "pointer", textAlign: "center" }}
                 onClick={() => handleSort("goals")}
               >
                 Gols
                 {sortField === "goals" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  <span style={{ marginLeft: "0.25rem" }}>{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
-              </th>
-              <th
-                className="cursor-pointer px-4 py-3 text-center text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+              </TableHead>
+              <TableHead
+                style={{ cursor: "pointer", textAlign: "center" }}
                 onClick={() => handleSort("assists")}
               >
                 Assists
                 {sortField === "assists" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  <span style={{ marginLeft: "0.25rem" }}>{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
-              </th>
-              <th
-                className="cursor-pointer px-4 py-3 text-center text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+              </TableHead>
+              <TableHead
+                style={{ cursor: "pointer", textAlign: "center" }}
                 onClick={() => handleSort("matches")}
               >
                 Partidas
                 {sortField === "matches" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  <span style={{ marginLeft: "0.25rem" }}>{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
-              </th>
-              <th
-                className="cursor-pointer px-4 py-3 text-center text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+              </TableHead>
+              <TableHead
+                style={{ cursor: "pointer", textAlign: "center" }}
                 onClick={() => handleSort("goalkeeper_count")}
               >
                 Goleiro
                 {sortField === "goalkeeper_count" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  <span style={{ marginLeft: "0.25rem" }}>{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
-              </th>
-              <th
-                className="cursor-pointer px-4 py-3 text-center text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+              </TableHead>
+              <TableHead
+                style={{ cursor: "pointer", textAlign: "center" }}
                 onClick={() => handleSort("wins")}
               >
                 Vitórias
                 {sortField === "wins" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  <span style={{ marginLeft: "0.25rem" }}>{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
-              </th>
-              <th
-                className="cursor-pointer px-4 py-3 text-center text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+              </TableHead>
+              <TableHead
+                style={{ cursor: "pointer", textAlign: "center" }}
                 onClick={() => handleSort("losses")}
               >
                 Derrotas
                 {sortField === "losses" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  <span style={{ marginLeft: "0.25rem" }}>{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
-              </th>
-              <th
-                className="cursor-pointer px-4 py-3 text-center text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+              </TableHead>
+              <TableHead
+                style={{ cursor: "pointer", textAlign: "center" }}
                 onClick={() => handleSort("draws")}
               >
                 Empates
                 {sortField === "draws" && (
-                  <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                  <span style={{ marginLeft: "0.25rem" }}>{sortDirection === "asc" ? "↑" : "↓"}</span>
                 )}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-200">
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody hoverable>
             {sortedStatistics.map((stat, index) => (
-              <motion.tr
+              <TableRow
                 key={stat.player.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="hover:bg-neutral-50 cursor-pointer"
+                hoverable
+                style={{ cursor: "pointer" }}
                 onClick={() => navigate(`/players/${stat.player.id}`)}
               >
-                <td className="px-4 py-3 font-medium text-neutral-900">
+                <TableCell style={{ fontWeight: 500 }}>
                   {stat.player.name}
-                </td>
-                <td className="px-4 py-3 text-center text-neutral-700">
+                </TableCell>
+                <TableCell style={{ textAlign: "center" }}>
                   {stat.goals}
-                </td>
-                <td className="px-4 py-3 text-center text-neutral-700">
+                </TableCell>
+                <TableCell style={{ textAlign: "center" }}>
                   {stat.assists}
-                </td>
-                <td className="px-4 py-3 text-center text-neutral-700">
+                </TableCell>
+                <TableCell style={{ textAlign: "center" }}>
                   {stat.matches}
-                </td>
-                <td className="px-4 py-3 text-center text-neutral-700">
+                </TableCell>
+                <TableCell style={{ textAlign: "center" }}>
                   {stat.goalkeeper_count}
-                </td>
-                <td className="px-4 py-3 text-center text-success-600 font-semibold">
+                </TableCell>
+                <TableCell style={{ textAlign: "center", color: "#16a34a", fontWeight: 600 }}>
                   {stat.wins}
-                </td>
-                <td className="px-4 py-3 text-center text-error-600 font-semibold">
+                </TableCell>
+                <TableCell style={{ textAlign: "center", color: "#dc2626", fontWeight: 600 }}>
                   {stat.losses}
-                </td>
-                <td className="px-4 py-3 text-center text-warning-600 font-semibold">
+                </TableCell>
+                <TableCell style={{ textAlign: "center", color: "#d97706", fontWeight: 600 }}>
                   {stat.draws}
-                </td>
-              </motion.tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 };

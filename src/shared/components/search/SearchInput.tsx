@@ -1,6 +1,6 @@
 import { ComponentProps, forwardRef, ChangeEvent } from "react";
 import { FaSearch } from "react-icons/fa";
-import { Input, cn } from "@sarradahub/design-system";
+import { Input, cn } from "@platform/design-system";
 
 interface SearchInputProps
   extends Omit<ComponentProps<typeof Input>, "onChange" | "value"> {
@@ -13,7 +13,7 @@ interface SearchInputProps
 const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
   ({ value, onChange, placeholder, className, ...props }, ref) => {
     return (
-      <div className={cn("relative", className)}>
+      <div style={{ position: "relative" }} className={className}>
         <Input
           ref={ref}
           type="text"
@@ -22,11 +22,11 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             onChange(e.target.value)
           }
-          className="pl-10"
+          style={{ paddingLeft: "2.5rem" }}
           {...props}
         />
         <FaSearch
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+          style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", color: "#a3a3a3", pointerEvents: "none" }}
           aria-hidden="true"
         />
       </div>

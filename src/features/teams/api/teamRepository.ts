@@ -1,4 +1,4 @@
-import { BaseService, PaginatedResponse, QueryParams } from "@/shared/api/baseService";
+import { BaseService, QueryParams } from "@/shared/api/baseService";
 import { Team } from "@/types";
 
 type UpsertTeamPayload = Partial<Pick<Team, "name">>;

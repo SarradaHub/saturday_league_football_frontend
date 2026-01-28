@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import BaseModal from "@/shared/components/modal/BaseModal";
+import { Modal, Button, Alert, Label } from "@platform/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 
@@ -68,60 +68,68 @@ const CreateRoundModal = ({
   };
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Criar Nova Rodada"
-      formId="round-form"
-      isSubmitting={isSubmitting}
-      submitLabel="Criar Rodada"
-      submitDisabled={!formData.name || !formData.round_date}
-    >
-      <form
-        id="round-form"
-        onSubmit={(event) =>
-          handleSubmit(async (payload) => {
-            await onCreate({
-              ...payload,
-              championship_id: Number(payload.championship_id),
-            });
-          }, event)
-        }
-      >
-        <FormInput
-          label="Nome da Rodada"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Ex: 1ª Rodada"
-          required
-        />
-        <div className="mb-6">
-          <label
-            htmlFor="round-date-picker"
-            className="mb-2 block text-sm font-medium text-neutral-700"
-          >
-            Data da Rodada *
-          </label>
-          <DatePicker
-            id="round-date-picker"
-            selected={selectedDate}
-            onChange={handleDateChange}
-            minDate={minDate}
-            dateFormat="dd/MM/yyyy"
-            placeholderText="Selecione uma data"
-            className="w-full rounded-lg border px-4 py-3 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+    <Modal isOpen={isOpen} onClose={handleClose} title="Criar Nova Rodada">
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <form
+          id="round-form"
+          onSubmit={(event) =>
+            handleSubmit(async (payload) => {
+              await onCreate({
+                ...payload,
+                championship_id: Number(payload.championship_id),
+              });
+            }, event)
+          }
+        >
+          <FormInput
+            label="Nome da Rodada"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Ex: 1ª Rodada"
             required
-            popperClassName="react-datepicker-popper"
           />
-        </div>
-        {error && (
-          <div className="mb-6 rounded-lg border border-error-100 bg-error-50 p-3">
-            <span className="text-sm text-error-600">{error}</span>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <Label htmlFor="round-date-picker" style={{ marginBottom: "0.5rem", display: "block" }}>
+              Data da Rodada *
+            </Label>
+            <DatePicker
+              id="round-date-picker"
+              selected={selectedDate}
+              onChange={handleDateChange}
+              minDate={minDate}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Selecione uma data"
+              style={{ width: "100%", borderRadius: "0.5rem", border: "1px solid #d4d4d4", padding: "0.75rem 1rem", outline: "none" }}
+              required
+              popperClassName="react-datepicker-popper"
+            />
           </div>
-        )}
-      </form>
-    </BaseModal>
+          {error && <Alert variant="error">{error}</Alert>}
+        </form>
+        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            aria-label="Cancelar"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            form="round-form"
+            loading={isSubmitting}
+            disabled={!formData.name || !formData.round_date}
+            aria-label="Criar Rodada"
+          >
+            Criar Rodada
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 };
 

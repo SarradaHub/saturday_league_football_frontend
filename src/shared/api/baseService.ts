@@ -1,4 +1,5 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import { tokenStorage } from "@/shared/utils/tokenStorage";
 
 export class ApiConfigAdapter {
   private static instance: ApiConfigAdapter;
@@ -140,6 +141,40 @@ export abstract class BaseService<
       timeout: 5000,
     });
     this.basePath = basePath;
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors(): void {
+    // Request interceptor: adicionar token Bearer
+    this.api.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const token = tokenStorage.getToken();
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      },
+    );
+
+    // Response interceptor: tratar erros 401
+    this.api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          // Token inválido ou expirado
+          tokenStorage.removeToken();
+          
+          // Redirecionar para login apenas se não estiver já na página de login
+          if (window.location.pathname !== "/login") {
+            window.location.href = "/login";
+          }
+        }
+        return Promise.reject(error);
+      },
+    );
   }
 
   protected async executeRequest<TResponse>(
