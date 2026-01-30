@@ -492,7 +492,7 @@ const PlayerDetailsPage = () => {
                 </div>
               )}
             </div>
-          </section>
+          </Card>
         </div>
       </Container>
 
