@@ -1,45 +1,61 @@
-# Saturday League Football Frontend
+# React + TypeScript + Vite
 
-This project delivers the web experience for the Saturday League Football platform. It consumes the Rails API, presents live standings, supports match management, and offers admin workflows for player and team maintenance.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Highlights
+## Environment Variables
 
-- Championship dashboard with standings, recent results, and upcoming fixtures.
-- Team and player directories with statistics sourced from the backend.
-- Match management views for creating, updating, and tracking fixtures.
-- Responsive layout built with Tailwind CSS and Radix UI primitives.
-- Global state handled with Zustand stores and React Query style data hooks.
+Create a `.env` file with:
 
-## Tech Stack
+```
+VITE_BASE_URL=http://localhost:4000
+VITE_EVENT_STREAM_URL=http://localhost:4000
+```
 
-- React 19 with TypeScript and Vite.
-- UI composed with Tailwind CSS, Radix UI, and custom design tokens in `src/shared`.
-- Routing powered by React Router and nested layouts under `src/app`.
-- API integration handled in `src/states` with typed client helpers.
+`VITE_EVENT_STREAM_URL` should point to the platform event gateway in order to stream live events to the UI.
 
-## Getting Started
+Currently, two official plugins are available:
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Create an `.env` file based on `.env.example` and set `VITE_API_URL` to the Rails backend endpoint.
-3. Launch the development server:
-   ```bash
-   npm run dev
-   ```
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-The app runs on `http://localhost:5173` by default and proxies API calls to the configured backend.
+## Expanding the ESLint configuration
 
-## Scripts
+If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
-- `npm run lint`: Run ESLint with type aware rules.
-- `npm run test`: Execute unit and component tests with Vitest.
-- `npm run build`: Produce an optimized production bundle.
+- Configure the top-level `parserOptions` property like this:
 
-## Project Layout
+```js
+export default tseslint.config({
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+});
+```
 
-- `src/app`: Global shell, routing, and layout primitives.
-- `src/features`: Feature specific screens and components grouped by domain (championships, matches, players, teams).
-- `src/states`: Zustand stores and API clients.
-- `src/shared`: Design system elements and utilities reused across features.
+- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
+- Optionally add `...tseslint.configs.stylisticTypeChecked`
+- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+
+```js
+// eslint.config.js
+import react from "eslint-plugin-react";
+
+export default tseslint.config({
+  // Set the react version
+  settings: { react: { version: "18.3" } },
+  plugins: {
+    // Add the react plugin
+    react,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended rules
+    ...react.configs.recommended.rules,
+    ...react.configs["jsx-runtime"].rules,
+  },
+});
+```

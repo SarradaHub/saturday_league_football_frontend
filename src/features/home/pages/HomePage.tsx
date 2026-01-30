@@ -54,6 +54,7 @@ const HomePage = () => (
             </motion.div>
           </div>
         </div>
+        <MatchEventTicker />
       </Container>
     </section>
     <section className="bg-white/5 py-20 backdrop-blur-lg">
