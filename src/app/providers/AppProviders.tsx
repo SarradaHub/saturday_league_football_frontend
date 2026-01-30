@@ -24,4 +24,3 @@ const AppProviders = ({ children }: PropsWithChildren) => {
 };
 
 export default AppProviders;
-

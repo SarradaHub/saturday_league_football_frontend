@@ -41,8 +41,11 @@ const CreatePlayerModal = ({
   onExistingPlayerAdded,
 }: CreatePlayerModalProps) => {
   const { id: routeIdParam } = useParams<{ id: string }>();
-  const routeId = useMemo(() => (routeIdParam ? Number(routeIdParam) : undefined), [routeIdParam]);
-  const targetId = context === "team" ? routeId : selectedRoundId ?? routeId;
+  const routeId = useMemo(
+    () => (routeIdParam ? Number(routeIdParam) : undefined),
+    [routeIdParam],
+  );
+  const targetId = context === "team" ? routeId : (selectedRoundId ?? routeId);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [existingPlayers, setExistingPlayers] = useState<Player[]>([]);
@@ -66,7 +69,8 @@ const CreatePlayerModal = ({
       try {
         const players = await playerRepository.list(championshipId);
         const availablePlayers = players.filter(
-          (player) => !currentPlayersRef.current.some((p) => p.id === player.id),
+          (player) =>
+            !currentPlayersRef.current.some((p) => p.id === player.id),
         );
         setExistingPlayers(availablePlayers);
       } catch (fetchError) {
@@ -93,7 +97,14 @@ const CreatePlayerModal = ({
     return candidates.filter((player) =>
       player.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
-  }, [context, existingPlayers, isOpen, playersFromRound, searchTerm, selectedRoundId]);
+  }, [
+    context,
+    existingPlayers,
+    isOpen,
+    playersFromRound,
+    searchTerm,
+    selectedRoundId,
+  ]);
 
   const handleClose = useCallback(() => {
     setSearchTerm("");
@@ -125,7 +136,9 @@ const CreatePlayerModal = ({
         }
 
         if (!championshipId) {
-          setError("Não foi possível identificar a pelada para criar o jogador.");
+          setError(
+            "Não foi possível identificar a pelada para criar o jogador.",
+          );
           return;
         }
 
@@ -219,4 +232,3 @@ const CreatePlayerModal = ({
 };
 
 export default CreatePlayerModal;
-

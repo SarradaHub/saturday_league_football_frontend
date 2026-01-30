@@ -28,7 +28,10 @@ const RoundFilterSection = ({
   return (
     <div className="px-2 pt-2">
       <div className="mb-2 flex items-center justify-between">
-        <label htmlFor="round-filter-select" className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor="round-filter-select"
+          className="text-sm font-medium text-gray-700"
+        >
           Filtrar por rodada:
         </label>
         <button
@@ -50,7 +53,8 @@ const RoundFilterSection = ({
           >
             {rounds.map((round) => (
               <option key={round.id} value={round.id}>
-                {round.name} ({format(new Date(round.round_date), "dd/MM/yyyy")})
+                {round.name} ({format(new Date(round.round_date), "dd/MM/yyyy")}
+                )
               </option>
             ))}
           </select>
@@ -64,4 +68,3 @@ const RoundFilterSection = ({
 };
 
 export default RoundFilterSection;
-

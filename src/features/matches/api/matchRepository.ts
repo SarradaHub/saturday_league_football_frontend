@@ -54,4 +54,3 @@ class MatchRepository extends BaseService<
 const matchRepository = new MatchRepository();
 
 export default matchRepository;
-

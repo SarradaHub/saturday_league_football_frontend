@@ -1,4 +1,11 @@
-import { useState, useCallback, useRef, useEffect, ChangeEvent, FormEvent } from "react";
+import {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  ChangeEvent,
+  FormEvent,
+} from "react";
 
 interface FormStateObserver<T = Record<string, unknown>> {
   (state: FormState<T>): void;
@@ -15,7 +22,9 @@ interface ValidationStrategy<T> {
   validate(data: T): { isValid: boolean; errors: string[] };
 }
 
-class DefaultValidationStrategy<T extends Record<string, unknown>> implements ValidationStrategy<T> {
+class DefaultValidationStrategy<T extends Record<string, unknown>>
+  implements ValidationStrategy<T>
+{
   validate(data: T): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
@@ -34,7 +43,8 @@ abstract class BaseFormHandler<T extends Record<string, unknown>> {
   protected validationStrategy: ValidationStrategy<T>;
 
   constructor(validationStrategy?: ValidationStrategy<T>) {
-    this.validationStrategy = validationStrategy || new DefaultValidationStrategy<T>();
+    this.validationStrategy =
+      validationStrategy || new DefaultValidationStrategy<T>();
   }
 
   protected async executeSubmit(
@@ -52,7 +62,10 @@ abstract class BaseFormHandler<T extends Record<string, unknown>> {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "An unexpected error occurred",
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
       };
     }
   }
@@ -73,7 +86,9 @@ abstract class BaseFormHandler<T extends Record<string, unknown>> {
   }
 }
 
-class ModalFormHandler<T extends Record<string, unknown>> extends BaseFormHandler<T> {
+class ModalFormHandler<
+  T extends Record<string, unknown>,
+> extends BaseFormHandler<T> {
   private state: FormState<T>;
 
   constructor(initialState: T, validationStrategy?: ValidationStrategy<T>) {
@@ -131,10 +146,15 @@ export const useModalForm = <T extends Record<string, unknown>>(
   const formHandlerRef = useRef<ModalFormHandler<T>>();
 
   if (!formHandlerRef.current) {
-    formHandlerRef.current = new ModalFormHandler(initialState, validationStrategy);
+    formHandlerRef.current = new ModalFormHandler(
+      initialState,
+      validationStrategy,
+    );
   }
 
-  const [state, setState] = useState<FormState<T>>(formHandlerRef.current.getState());
+  const [state, setState] = useState<FormState<T>>(
+    formHandlerRef.current.getState(),
+  );
 
   const observer: FormStateObserver<Record<string, unknown>> = useCallback(
     (newState: FormState<Record<string, unknown>>) => {
@@ -149,15 +169,25 @@ export const useModalForm = <T extends Record<string, unknown>>(
     return () => handler.removeObserver(observer);
   }, [observer]);
 
-  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = event.target;
-    formHandlerRef.current!.handleChange(name, value);
-  }, []);
+  const handleChange = useCallback(
+    (
+      event: ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >,
+    ) => {
+      const { name, value } = event.target;
+      formHandlerRef.current!.handleChange(name, value);
+    },
+    [],
+  );
 
-  const handleSubmit = useCallback(async (callback: (data: T) => Promise<void>, event: FormEvent) => {
-    event.preventDefault();
-    await formHandlerRef.current!.handleSubmit(callback);
-  }, []);
+  const handleSubmit = useCallback(
+    async (callback: (data: T) => Promise<void>, event: FormEvent) => {
+      event.preventDefault();
+      await formHandlerRef.current!.handleSubmit(callback);
+    },
+    [],
+  );
 
   const resetForm = useCallback(() => {
     formHandlerRef.current!.resetForm(initialState);
@@ -178,4 +208,3 @@ export const useModalForm = <T extends Record<string, unknown>>(
     resetForm,
   };
 };
-

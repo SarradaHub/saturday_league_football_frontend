@@ -13,6 +13,48 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
+      // Alias root import to the actual entry point
+      "@sarradahub/design-system$": resolve(
+        __dirname,
+        "../platform/design-system/dist/index.js",
+      ),
+      // Alias subpath imports to their actual locations
+      "@sarradahub/design-system/tokens": resolve(
+        __dirname,
+        "../platform/design-system/dist/tokens/index.js",
+      ),
+      "@sarradahub/design-system/css": resolve(
+        __dirname,
+        "../platform/design-system/dist/tokens/css-variables.css",
+      ),
+    },
+    // Ensure Vite respects package.json exports for subpath imports
+    conditions: ["import", "module", "browser", "default"],
+  },
+  server: {
+    port:
+      process.env.PORT && process.env.PORT.trim() !== ""
+        ? parseInt(process.env.PORT, 10)
+        : process.env.VITE_PORT
+          ? parseInt(process.env.VITE_PORT, 10)
+          : 3002,
+    strictPort: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:3004",
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy) => {
+          proxy.on("proxyReq", (_proxyReq, req) => {
+            console.log(
+              "Proxying request:",
+              req.method,
+              req.url,
+              "-> http://localhost:3004",
+            );
+          });
+        },
+      },
     },
   },
 });

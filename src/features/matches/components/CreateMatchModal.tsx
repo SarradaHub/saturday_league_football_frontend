@@ -24,8 +24,21 @@ interface CreateMatchModalProps {
   roundId: number;
 }
 
-const CreateMatchModal = ({ isOpen, onClose, onCreate, teams, roundId }: CreateMatchModalProps) => {
-  const { formData, setFormData, handleChange, error, isSubmitting, resetForm } = useModalForm({
+const CreateMatchModal = ({
+  isOpen,
+  onClose,
+  onCreate,
+  teams,
+  roundId,
+}: CreateMatchModalProps) => {
+  const {
+    formData,
+    setFormData,
+    handleChange,
+    error,
+    isSubmitting,
+    resetForm,
+  } = useModalForm({
     name: "",
     team_1_id: "",
     team_2_id: "",
@@ -58,7 +71,10 @@ const CreateMatchModal = ({ isOpen, onClose, onCreate, teams, roundId }: CreateM
     handleClose();
   };
 
-  const submitDisabled = !formData.team_1_id || !formData.team_2_id || formData.team_1_id === formData.team_2_id;
+  const submitDisabled =
+    !formData.team_1_id ||
+    !formData.team_2_id ||
+    formData.team_1_id === formData.team_2_id;
 
   return (
     <BaseModal
@@ -112,4 +128,3 @@ const CreateMatchModal = ({ isOpen, onClose, onCreate, teams, roundId }: CreateM
 };
 
 export default CreateMatchModal;
-

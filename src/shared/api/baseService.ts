@@ -5,7 +5,15 @@ export class ApiConfigAdapter {
   private readonly baseURL: string;
 
   private constructor() {
-    this.baseURL = import.meta.env.VITE_BASE_URL;
+    // Use relative URL in development to leverage Vite proxy
+    // If VITE_BASE_URL is set to http://localhost (without port), use empty string for proxy
+    // Otherwise use the provided base URL
+    const envBaseURL = import.meta.env.VITE_BASE_URL;
+    if (envBaseURL === "http://localhost" || !envBaseURL) {
+      this.baseURL = "";
+    } else {
+      this.baseURL = envBaseURL;
+    }
   }
 
   static getInstance(): ApiConfigAdapter {
@@ -62,7 +70,9 @@ export class PutStrategy<TResponse> implements HttpMethodStrategy<TResponse> {
   }
 }
 
-export class DeleteStrategy<TResponse> implements HttpMethodStrategy<TResponse> {
+export class DeleteStrategy<TResponse>
+  implements HttpMethodStrategy<TResponse>
+{
   async execute(
     api: AxiosInstance,
     url: string,
@@ -84,7 +94,9 @@ export class HttpMethodFactory {
   static getStrategy<TResponse>(
     method: "GET" | "POST" | "PUT" | "DELETE",
   ): HttpMethodStrategy<TResponse> {
-    const strategy = this.strategies.get(method) as HttpMethodStrategy<TResponse> | undefined;
+    const strategy = this.strategies.get(method) as
+      | HttpMethodStrategy<TResponse>
+      | undefined;
     if (!strategy) {
       throw new Error(`Unknown HTTP method: ${method}`);
     }
@@ -126,14 +138,21 @@ export abstract class BaseService<
 
   protected handleError(error: unknown): never {
     if (axios.isAxiosError(error)) {
-      throw new Error(`API Error: ${error.response?.data?.message || error.message}`);
+      throw new Error(
+        `API Error: ${error.response?.data?.message || error.message}`,
+      );
     }
     throw new Error("An unexpected error occurred");
   }
 
   protected async getAll(params?: TQuery): Promise<TEntity[]> {
     try {
-      const response = await this.executeRequest<TEntity[]>("GET", "/", undefined, params);
+      const response = await this.executeRequest<TEntity[]>(
+        "GET",
+        "/",
+        undefined,
+        params,
+      );
       return this.handleResponse(response);
     } catch (error) {
       this.handleError(error);
@@ -160,7 +179,11 @@ export abstract class BaseService<
 
   protected async update(id: number, data: TUpdate): Promise<TEntity> {
     try {
-      const response = await this.executeRequest<TEntity>("PUT", `/${id}`, data);
+      const response = await this.executeRequest<TEntity>(
+        "PUT",
+        `/${id}`,
+        data,
+      );
       return this.handleResponse(response);
     } catch (error) {
       this.handleError(error);
@@ -175,4 +198,3 @@ export abstract class BaseService<
     }
   }
 }
-

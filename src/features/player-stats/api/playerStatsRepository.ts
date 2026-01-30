@@ -4,7 +4,12 @@ import { PlayerStat } from "@/types";
 interface PlayerStatPayload
   extends Pick<
     PlayerStat,
-    "goals" | "own_goals" | "assists" | "was_goalkeeper" | "match_id" | "team_id"
+    | "goals"
+    | "own_goals"
+    | "assists"
+    | "was_goalkeeper"
+    | "match_id"
+    | "team_id"
   > {
   player_id: number;
 }
@@ -27,8 +32,8 @@ class PlayerStatsRepository extends BaseService<
   }
 
   findByMatchId(matchId: number) {
-    return this.executeRequest<PlayerStat[]>("GET", `/match/${matchId}`).then((response) =>
-      this.handleResponse(response),
+    return this.executeRequest<PlayerStat[]>("GET", `/match/${matchId}`).then(
+      (response) => this.handleResponse(response),
     );
   }
 
@@ -54,4 +59,3 @@ class PlayerStatsRepository extends BaseService<
 const playerStatsRepository = new PlayerStatsRepository();
 
 export default playerStatsRepository;
-

@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
-import { typography, colors } from "@/shared/styles/tokens";
+import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 
 const HomePage = lazy(() => import("@/features/home/pages/HomePage"));
 const ChampionshipListPage = lazy(
@@ -9,17 +9,22 @@ const ChampionshipListPage = lazy(
 const ChampionshipDetailsPage = lazy(
   () => import("@/features/championships/pages/ChampionshipDetailsPage"),
 );
-const RoundDetailsPage = lazy(() => import("@/features/rounds/pages/RoundDetailsPage"));
-const MatchDetailsPage = lazy(() => import("@/features/matches/pages/MatchDetailsPage"));
-const PlayerDetailsPage = lazy(() => import("@/features/players/pages/PlayerDetailsPage"));
-const TeamDetailsPage = lazy(() => import("@/features/teams/pages/TeamDetailsPage"));
+const RoundDetailsPage = lazy(
+  () => import("@/features/rounds/pages/RoundDetailsPage"),
+);
+const MatchDetailsPage = lazy(
+  () => import("@/features/matches/pages/MatchDetailsPage"),
+);
+const PlayerDetailsPage = lazy(
+  () => import("@/features/players/pages/PlayerDetailsPage"),
+);
+const TeamDetailsPage = lazy(
+  () => import("@/features/teams/pages/TeamDetailsPage"),
+);
 
 const LoadingScreen = () => (
-  <div
-    className="flex min-h-[60vh] items-center justify-center text-sm text-gray-500"
-    style={{ fontFamily: typography.fontFamily, color: colors.neutral[700] }}
-  >
-    Carregando conteúdo...
+  <div className="flex min-h-[60vh] items-center justify-center">
+    <LoadingSpinner size="lg" text="Carregando conteúdo..." />
   </div>
 );
 
@@ -38,4 +43,3 @@ const AppRoutes = () => (
 );
 
 export default AppRoutes;
-

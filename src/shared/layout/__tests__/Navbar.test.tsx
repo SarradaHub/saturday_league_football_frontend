@@ -20,7 +20,10 @@ describe("Navbar", () => {
   it("provides navigation links", () => {
     renderNavbar();
     const peladasLinks = screen.getAllByRole("link", { name: /peladas/i });
-    expect(peladasLinks.some((link) => link.getAttribute("href") === "/championships")).toBe(true);
+    expect(
+      peladasLinks.some(
+        (link) => link.getAttribute("href") === "/championships",
+      ),
+    ).toBe(true);
   });
 });
-

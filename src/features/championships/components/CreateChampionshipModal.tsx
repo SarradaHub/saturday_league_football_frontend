@@ -48,7 +48,9 @@ const CreateChampionshipModal = ({
         const max = Number(data.max_players_per_team);
 
         if (Number.isNaN(min) || min < 0) {
-          errors.push("O mínimo por time deve ser um número maior ou igual a zero.");
+          errors.push(
+            "O mínimo por time deve ser um número maior ou igual a zero.",
+          );
         }
 
         if (Number.isNaN(max) || max <= 0) {
@@ -153,4 +155,3 @@ const CreateChampionshipModal = ({
 };
 
 export default CreateChampionshipModal;
-

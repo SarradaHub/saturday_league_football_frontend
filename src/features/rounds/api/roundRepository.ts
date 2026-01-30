@@ -38,4 +38,3 @@ class RoundRepository extends BaseService<
 const roundRepository = new RoundRepository();
 
 export default roundRepository;
-

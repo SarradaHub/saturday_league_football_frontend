@@ -7,7 +7,11 @@ interface ModalHeaderProps {
   onClose: () => void;
 }
 
-const ModalHeader = ({ context, selectedPlayer, onClose }: ModalHeaderProps) => (
+const ModalHeader = ({
+  context,
+  selectedPlayer,
+  onClose,
+}: ModalHeaderProps) => (
   <div className="flex items-center justify-between border-b p-6">
     <h3 className="text-2xl font-bold text-gray-900">
       {selectedPlayer
@@ -26,4 +30,3 @@ const ModalHeader = ({ context, selectedPlayer, onClose }: ModalHeaderProps) => 
 );
 
 export default ModalHeader;
-

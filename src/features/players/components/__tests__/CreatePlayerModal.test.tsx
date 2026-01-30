@@ -15,7 +15,9 @@ type MockMotionDivProps = Record<string, unknown> & { children?: ReactNode };
 vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
   motion: {
-    div: ({ children, ...rest }: MockMotionDivProps) => <div {...rest}>{children}</div>,
+    div: ({ children, ...rest }: MockMotionDivProps) => (
+      <div {...rest}>{children}</div>
+    ),
   },
 }));
 
@@ -24,6 +26,27 @@ vi.mock("@/features/players/api/playerRepository", () => ({
     list: mockList,
     addToRound: mockAddToRound,
     addToTeam: mockAddToTeam,
+  },
+}));
+
+vi.mock("@/shared/components/modal/BaseModal", () => ({
+  default: ({ isOpen, onClose, title, children, submitLabel, formId, submitDisabled, isSubmitting }: { isOpen: boolean; onClose: () => void; title?: string; children: ReactNode; submitLabel?: string; formId?: string; submitDisabled?: boolean; isSubmitting?: boolean }) => {
+    if (!isOpen) return null;
+    return (
+      <div data-testid="modal" role="dialog" aria-modal="true">
+        {title && <h2>{title}</h2>}
+        <button onClick={onClose} aria-label="Close modal">×</button>
+        {children}
+        <div>
+          <button type="button" onClick={onClose} disabled={isSubmitting}>
+            Cancelar
+          </button>
+          <button type="submit" form={formId} disabled={submitDisabled || isSubmitting} aria-label={submitLabel}>
+            {submitLabel || "Submit"}
+          </button>
+        </div>
+      </div>
+    );
   },
 }));
 
@@ -49,7 +72,9 @@ const renderModal = async (
 
   const user = userEvent.setup();
   const renderResult = render(<CreatePlayerModal {...props} />);
-  await waitFor(() => expect(mockList).toHaveBeenCalledWith(props.championshipId));
+  await waitFor(() =>
+    expect(mockList).toHaveBeenCalledWith(props.championshipId),
+  );
 
   return {
     props,
@@ -78,7 +103,9 @@ describe("CreatePlayerModal", () => {
       onClose,
     });
 
-    const input = screen.getByPlaceholderText("Busque jogadores ou crie um novo");
+    const input = screen.getByPlaceholderText(
+      "Busque jogadores ou crie um novo",
+    );
     await user.type(input, "   Novo Jogador  ");
     const submitButton = screen.getByRole("button", { name: "Criar Jogador" });
     await user.click(submitButton);
@@ -98,7 +125,9 @@ describe("CreatePlayerModal", () => {
     const onCreate = vi.fn().mockResolvedValue(undefined);
     const { user } = await renderModal({ onCreate });
 
-    const input = screen.getByPlaceholderText("Busque jogadores ou crie um novo");
+    const input = screen.getByPlaceholderText(
+      "Busque jogadores ou crie um novo",
+    );
     await user.type(input, "   ");
     await user.type(input, "{enter}");
 
@@ -132,10 +161,14 @@ describe("CreatePlayerModal", () => {
       onCreate,
     });
 
-    const input = screen.getByPlaceholderText("Busque jogadores ou crie um novo");
+    const input = screen.getByPlaceholderText(
+      "Busque jogadores ou crie um novo",
+    );
     await user.type(input, "Jo");
 
-    const option = await screen.findByRole("option", { name: existingPlayer.name });
+    const option = await screen.findByRole("option", {
+      name: existingPlayer.name,
+    });
     await user.click(option);
 
     const submitButton = screen.getByRole("button", {
@@ -143,9 +176,10 @@ describe("CreatePlayerModal", () => {
     });
     await user.click(submitButton);
 
-    await waitFor(() => expect(mockAddToRound).toHaveBeenCalledWith(existingPlayer.id, 42));
+    await waitFor(() =>
+      expect(mockAddToRound).toHaveBeenCalledWith(existingPlayer.id, 42),
+    );
     await waitFor(() => expect(onExistingPlayerAdded).toHaveBeenCalled());
     expect(onCreate).not.toHaveBeenCalled();
   });
 });
-

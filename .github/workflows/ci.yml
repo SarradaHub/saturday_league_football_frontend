@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  react-ci:
+    uses: SarradaHub/platform/.github/workflows/react-vite-ci.yaml@main
+    with:
+      working-directory: .
+      node-version: "20"
+      install-command: |
+        set -e
+        ORIGINAL_DIR=$(pwd)
+        echo "Starting in: $ORIGINAL_DIR"
+        npm ci
+        cd "$(dirname "$ORIGINAL_DIR")"
+        echo "Now in: $(pwd)"
+        if [ ! -d "platform" ]; then
+          echo "Cloning platform repository..."
+          git clone --depth 1 --branch main https://github.com/SarradaHub/platform.git platform
+        else
+          echo "Platform directory already exists"
+        fi
+        if [ ! -d "platform/design-system" ]; then
+          echo "Error: platform/design-system directory not found after clone"
+          exit 1
+        fi
+        cd platform/design-system
+        echo "Installing design-system dependencies..."
+        npm ci --legacy-peer-deps
+        echo "Building design-system..."
+        npm run build
+        cd "$ORIGINAL_DIR"
+        echo "Back in original directory: $(pwd)"
+      lint-command: npm run lint
+      test-command: npm run test -- --coverage
+      build-command: npm run build

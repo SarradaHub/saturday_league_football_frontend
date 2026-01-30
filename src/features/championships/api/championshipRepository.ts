@@ -41,4 +41,3 @@ class ChampionshipRepository extends BaseService<
 const championshipRepository = new ChampionshipRepository();
 
 export default championshipRepository;
-

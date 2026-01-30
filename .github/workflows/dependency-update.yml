@@ -1,0 +1,13 @@
+name: Dependency Update
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  update:
+    uses: SarradaHub/platform/.github/workflows/dependency-update.yaml@main
+    with:
+      node-version: "20"
+      working-directory: .

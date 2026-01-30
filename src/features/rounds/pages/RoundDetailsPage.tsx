@@ -20,7 +20,8 @@ import CreateMatchModal from "@/features/matches/components/CreateMatchModal";
 import CreatePlayerModal from "@/features/players/components/CreatePlayerModal";
 import CreateTeamModal from "@/features/teams/components/CreateTeamModal";
 import Container from "@/shared/components/layout/Container";
-import { typography } from "@/shared/styles/tokens";
+import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Match, Player, Team } from "@/types";
 
 const queryKeys = {
@@ -43,10 +44,12 @@ const RoundDetailsPage = () => {
   const [isTeamModalOpen, setTeamModalOpen] = useState(false);
   const [playerSearch, setPlayerSearch] = useState("");
   const [teamSearch, setTeamSearch] = useState("");
-  const [toast, setToast] = useState<{ open: boolean; message: string | null }>({
-    open: false,
-    message: null,
-  });
+  const [toast, setToast] = useState<{ open: boolean; message: string | null }>(
+    {
+      open: false,
+      message: null,
+    },
+  );
 
   const {
     data: round,
@@ -76,13 +79,16 @@ const RoundDetailsPage = () => {
       setToast({
         open: true,
         message:
-          mutationError instanceof Error ? mutationError.message : "Erro ao criar partida.",
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao criar partida.",
       }),
   });
 
   const playerMutation = useMutation({
-    mutationFn: (payload: Parameters<typeof playerRepository.createPlayer>[0]) =>
-      playerRepository.createPlayer(payload),
+    mutationFn: (
+      payload: Parameters<typeof playerRepository.createPlayer>[0],
+    ) => playerRepository.createPlayer(payload),
     onSuccess: () => {
       setToast({ open: true, message: "Jogador criado com sucesso!" });
       setPlayerModalOpen(false);
@@ -92,7 +98,9 @@ const RoundDetailsPage = () => {
       setToast({
         open: true,
         message:
-          mutationError instanceof Error ? mutationError.message : "Erro ao criar jogador.",
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao criar jogador.",
       }),
   });
 
@@ -108,7 +116,9 @@ const RoundDetailsPage = () => {
       setToast({
         open: true,
         message:
-          mutationError instanceof Error ? mutationError.message : "Erro ao criar time.",
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao criar time.",
       }),
   });
 
@@ -119,7 +129,9 @@ const RoundDetailsPage = () => {
   const filteredPlayers = useMemo(() => {
     const normalized = playerSearch.trim().toLowerCase();
     if (!normalized) return players;
-    return players.filter((player) => player.name.toLowerCase().includes(normalized));
+    return players.filter((player) =>
+      player.name.toLowerCase().includes(normalized),
+    );
   }, [players, playerSearch]);
 
   const filteredTeams = useMemo(() => {
@@ -128,7 +140,10 @@ const RoundDetailsPage = () => {
     return teams.filter((team) => team.name.toLowerCase().includes(normalized));
   }, [teams, teamSearch]);
 
-  const handleCloseToast = (_event: Event | React.SyntheticEvent, reason?: SnackbarCloseReason) => {
+  const handleCloseToast = (
+    _event: Event | React.SyntheticEvent,
+    reason?: SnackbarCloseReason,
+  ) => {
     if (reason === "clickaway") return;
     setToast({ open: false, message: null });
   };
@@ -144,7 +159,11 @@ const RoundDetailsPage = () => {
   }
 
   if (isLoading) {
-    return <div className="mt-24 flex min-h-screen items-center justify-center">Carregando...</div>;
+    return (
+      <div className="mt-24 flex min-h-screen items-center justify-center">
+        <LoadingSpinner size="lg" text="Carregando..." />
+      </div>
+    );
   }
 
   if (error || !round) {
@@ -156,200 +175,217 @@ const RoundDetailsPage = () => {
           : "Rodada não encontrada.";
     return (
       <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-red-50 px-4 py-3 text-red-600">{message}</span>
+        <span className="rounded-lg bg-red-50 px-4 py-3 text-red-600">
+          {message}
+        </span>
       </div>
     );
   }
 
   return (
-    <div
-      className="mt-24 min-h-screen bg-gray-50 py-8"
-      style={{ fontFamily: typography.fontFamily }}
-    >
+    <div className="mt-24 min-h-screen bg-gray-50 py-8 font-sans">
       <Container>
-        <div className="flex flex-col gap-8">
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-            <div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="mb-4 inline-flex items-center gap-2 text-gray-600 transition hover:text-gray-800"
+                >
+                  <FaArrowLeft aria-hidden />
+                  Voltar
+                </button>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {round.name}
+                </h1>
+                <p className="text-gray-600">
+                  {format(new Date(round.round_date), "dd MMMM yyyy")}
+                </p>
+              </div>
+              <span className="inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800">
+                {matches.length} partidas
+              </span>
+            </div>
+          </section>
+
+          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
+                <FaFutbol className="text-green-500" aria-hidden />
+                Partidas
+              </h2>
               <button
                 type="button"
-                onClick={() => navigate(-1)}
-                className="mb-4 inline-flex items-center gap-2 text-gray-600 transition hover:text-gray-800"
+                onClick={() => setMatchModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
               >
-                <FaArrowLeft aria-hidden />
-                Voltar
+                <FaPlus aria-hidden />
+                Criar Partida
               </button>
-              <h1 className="text-3xl font-bold text-gray-900">{round.name}</h1>
-              <p className="text-gray-600">
-                {format(new Date(round.round_date), "dd MMMM yyyy")}
-              </p>
             </div>
-            <span className="inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800">
-              {matches.length} partidas
-            </span>
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
-              <FaFutbol className="text-green-500" aria-hidden />
-              Partidas
-            </h2>
-            <button
-              type="button"
-              onClick={() => setMatchModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
-            >
-              <FaPlus aria-hidden />
-              Criar Partida
-            </button>
-          </div>
-          {matches.length > 0 ? (
-            <div className="space-y-4">
-              {matches.map((match: Match) => (
-                <motion.button
-                  key={match.id}
-                  type="button"
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="w-full rounded-xl border border-gray-100 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onClick={() => navigate(`/matches/${match.id}`)}
-                >
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>{format(new Date(match.created_at), "dd/MM/yyyy")}</span>
-                    <span>{match.name}</span>
-                  </div>
-                  <div className="mt-3 grid grid-cols-3 items-center gap-4 text-center">
-                    <p className="font-medium text-right">{match.team_1.name}</p>
-                    <div className="text-2xl font-bold text-gray-500">
-                      {match.team_1_goals} x {match.team_2_goals}
+            {matches.length > 0 ? (
+              <div className="space-y-4">
+                {matches.map((match: Match) => (
+                  <motion.button
+                    key={match.id}
+                    type="button"
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="w-full rounded-xl border border-gray-100 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={() => navigate(`/matches/${match.id}`)}
+                  >
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span>
+                        {format(new Date(match.created_at), "dd/MM/yyyy")}
+                      </span>
+                      <span>{match.name}</span>
                     </div>
-                    <p className="font-medium text-left">{match.team_2.name}</p>
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-          ) : (
-            <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
-              Nenhuma partida cadastrada.
-            </p>
-          )}
-        </section>
+                    <div className="mt-3 grid grid-cols-3 items-center gap-4 text-center">
+                      <p className="font-medium text-right">
+                        {match.team_1.name}
+                      </p>
+                      <div className="text-2xl font-bold text-gray-500">
+                        {match.team_1_goals} x {match.team_2_goals}
+                      </div>
+                      <p className="font-medium text-left">
+                        {match.team_2.name}
+                      </p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
+                Nenhuma partida cadastrada.
+              </p>
+            )}
+          </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
-              <FaUser className="text-blue-500" aria-hidden />
-              Jogadores
-            </h2>
-            <button
-              type="button"
-              onClick={() => setPlayerModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
-            >
-              <FaPlus aria-hidden />
-              Adicionar Jogador
-            </button>
-          </div>
-          <div className="relative mb-6">
-            <input
-              type="search"
-              value={playerSearch}
-              onChange={(event) => setPlayerSearch(event.target.value)}
-              placeholder="Buscar jogador..."
-              className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-            />
-            <FaSearch className="absolute left-3 top-3 text-gray-400" aria-hidden />
-          </div>
-          {filteredPlayers.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {filteredPlayers.map((player: Player) => (
-                <motion.button
-                  key={player.id}
-                  type="button"
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onClick={() => navigate(`/players/${player.id}`)}
-                >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-lg font-bold text-blue-600">
-                    {player.name.charAt(0).toUpperCase()}
-                  </span>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{player.name}</h3>
-                    <p className="text-sm text-gray-500">
-                      Participou de {player.rounds?.length ?? 0} rodadas
-                    </p>
-                  </div>
-                </motion.button>
-              ))}
+          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
+                <FaUser className="text-blue-500" aria-hidden />
+                Jogadores
+              </h2>
+              <button
+                type="button"
+                onClick={() => setPlayerModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
+              >
+                <FaPlus aria-hidden />
+                Adicionar Jogador
+              </button>
             </div>
-          ) : (
-            <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
-              Nenhum jogador encontrado.
-            </p>
-          )}
-        </section>
+            <div className="relative mb-6">
+              <input
+                type="search"
+                value={playerSearch}
+                onChange={(event) => setPlayerSearch(event.target.value)}
+                placeholder="Buscar jogador..."
+                className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              />
+              <FaSearch
+                className="absolute left-3 top-3 text-gray-400"
+                aria-hidden
+              />
+            </div>
+            {filteredPlayers.length > 0 ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {filteredPlayers.map((player: Player) => (
+                  <motion.button
+                    key={player.id}
+                    type="button"
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={() => navigate(`/players/${player.id}`)}
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-lg font-bold text-blue-600">
+                      {player.name.charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {player.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Participou de {player.rounds?.length ?? 0} rodadas
+                      </p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
+                Nenhum jogador encontrado.
+              </p>
+            )}
+          </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
-              <FaUsers className="text-indigo-500" aria-hidden />
-              Times
-            </h2>
-            <button
-              type="button"
-              onClick={() => setTeamModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
-            >
-              <FaPlus aria-hidden />
-              Criar Time
-            </button>
-          </div>
-          <div className="relative mb-6">
-            <input
-              type="search"
-              value={teamSearch}
-              onChange={(event) => setTeamSearch(event.target.value)}
-              placeholder="Buscar time..."
-              className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-            />
-            <FaSearch className="absolute left-3 top-3 text-gray-400" aria-hidden />
-          </div>
-          {filteredTeams.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {filteredTeams.map((team: Team) => (
-                <motion.button
-                  key={team.id}
-                  type="button"
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onClick={() =>
-                    navigate(`/teams/${team.id}`, {
-                      state: { roundId },
-                    })
-                  }
-                >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-600">
-                    {team.name.charAt(0).toUpperCase()}
-                  </span>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{team.name}</h3>
-                  </div>
-                </motion.button>
-              ))}
+          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
+                <FaUsers className="text-indigo-500" aria-hidden />
+                Times
+              </h2>
+              <button
+                type="button"
+                onClick={() => setTeamModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
+              >
+                <FaPlus aria-hidden />
+                Criar Time
+              </button>
             </div>
-          ) : (
-            <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
-              Nenhum time encontrado.
-            </p>
-          )}
-        </section>
+            <div className="relative mb-6">
+              <input
+                type="search"
+                value={teamSearch}
+                onChange={(event) => setTeamSearch(event.target.value)}
+                placeholder="Buscar time..."
+                className="w-full rounded-full border px-4 py-2 pl-10 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              />
+              <FaSearch
+                className="absolute left-3 top-3 text-gray-400"
+                aria-hidden
+              />
+            </div>
+            {filteredTeams.length > 0 ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {filteredTeams.map((team: Team) => (
+                  <motion.button
+                    key={team.id}
+                    type="button"
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={() =>
+                      navigate(`/teams/${team.id}`, {
+                        state: { roundId },
+                      })
+                    }
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-600">
+                      {team.name.charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {team.name}
+                      </h3>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
+                Nenhum time encontrado.
+              </p>
+            )}
+          </section>
         </div>
       </Container>
 
@@ -397,7 +433,9 @@ const RoundDetailsPage = () => {
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         sx={{
           "& .MuiSnackbarContent-root": {
-            backgroundColor: toast.message?.includes("sucesso") ? "#2563eb" : "#b91c1c",
+            backgroundColor: toast.message?.includes("sucesso")
+              ? colors.primary[600]
+              : colors.error[700],
             color: "#fff",
           },
         }}
@@ -407,4 +445,3 @@ const RoundDetailsPage = () => {
 };
 
 export default RoundDetailsPage;
-

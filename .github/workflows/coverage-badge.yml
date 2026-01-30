@@ -1,0 +1,16 @@
+name: Coverage Badge
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  coverage:
+    uses: SarradaHub/platform/.github/workflows/coverage-badge.yaml@main
+    with:
+      node-version: "20"
+      working-directory: .
+      install-command: npm ci
+      test-command: npm run test -- --coverage
+      coverage-paths: coverage

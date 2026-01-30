@@ -1,4 +1,5 @@
 import { ChangeEvent, InputHTMLAttributes } from "react";
+import { Input, Textarea, Select } from "@sarradahub/design-system";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
@@ -15,6 +16,7 @@ interface FormInputProps {
   options?: { id: number | string; name: string }[];
   rows?: number;
   inputProps?: InputHTMLAttributes<HTMLInputElement>;
+  error?: string;
 }
 
 const FormInput = ({
@@ -28,64 +30,70 @@ const FormInput = ({
   options = [],
   rows = 3,
   inputProps = {},
+  error,
 }: FormInputProps) => {
   const renderField = () => {
     if (type === "textarea") {
       return (
-        <textarea
+        <Textarea
           name={name}
           value={value}
-          onChange={onChange}
-          className="w-full resize-none rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            onChange(e as ChangeEvent<InputElement>)
+          }
           placeholder={placeholder}
-          rows={rows}
           required={required}
+          rows={rows}
+          error={error}
+          label={label}
+          {...(inputProps as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
         />
       );
     }
 
     if (type === "select") {
+      // Convert options format from { id, name } to { value, label }
+      const selectOptions = [
+        { value: "", label: placeholder },
+        ...options.map((option) => ({
+          value: String(option.id),
+          label: option.name,
+        })),
+      ];
+
       return (
-        <select
+        <Select
           name={name}
           value={value}
-          onChange={onChange}
-          className="w-full rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            onChange(e as ChangeEvent<InputElement>)
+          }
           required={required}
-        >
-          <option value="">{placeholder}</option>
-          {options.map((option) => (
-            <option key={option.id} value={option.id}>
-              {option.name}
-            </option>
-          ))}
-        </select>
+          error={error}
+          label={label}
+          options={selectOptions}
+        />
       );
     }
 
     return (
-      <input
+      <Input
         name={name}
         type={type}
         value={value}
-        onChange={onChange}
-        className="w-full rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange(e as ChangeEvent<InputElement>)
+        }
         placeholder={placeholder}
         required={required}
+        error={error}
+        label={label}
         {...inputProps}
       />
     );
   };
 
-  return (
-    <div className="mb-6">
-      <label className="mb-2 block text-sm font-medium text-gray-700">
-        {label} {required && "*"}
-      </label>
-      {renderField()}
-    </div>
-  );
+  return <div className="mb-6">{renderField()}</div>;
 };
 
 export default FormInput;
-

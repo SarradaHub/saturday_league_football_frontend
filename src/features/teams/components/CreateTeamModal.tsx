@@ -10,8 +10,20 @@ interface CreateTeamModalProps {
   roundId: number;
 }
 
-const CreateTeamModal = ({ isOpen, onClose, onCreate, roundId }: CreateTeamModalProps) => {
-  const { formData, setFormData, handleChange, error, isSubmitting, resetForm } = useModalForm({
+const CreateTeamModal = ({
+  isOpen,
+  onClose,
+  onCreate,
+  roundId,
+}: CreateTeamModalProps) => {
+  const {
+    formData,
+    setFormData,
+    handleChange,
+    error,
+    isSubmitting,
+    resetForm,
+  } = useModalForm({
     name: "",
     round_id: roundId,
   });
@@ -62,4 +74,3 @@ const CreateTeamModal = ({ isOpen, onClose, onCreate, roundId }: CreateTeamModal
 };
 
 export default CreateTeamModal;
-

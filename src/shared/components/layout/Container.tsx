@@ -1,16 +1,14 @@
-import { CSSProperties, PropsWithChildren } from "react";
-import { layout } from "@/shared/styles/tokens";
+import { PropsWithChildren } from "react";
+import { cn } from "@sarradahub/design-system";
 
-const containerStyle: CSSProperties = {
-  maxWidth: layout.maxWidth,
-  paddingInline: layout.gutter,
-  marginInline: "auto",
-  width: "100%",
-};
+interface ContainerProps extends PropsWithChildren {
+  className?: string;
+}
 
-const Container = ({ children }: PropsWithChildren) => (
-  <div style={containerStyle}>{children}</div>
+const Container = ({ children, className }: ContainerProps) => (
+  <div className={cn("max-w-7xl mx-auto px-4 sm:px-6 lg:px-8", className)}>
+    {children}
+  </div>
 );
 
 export default Container;
-

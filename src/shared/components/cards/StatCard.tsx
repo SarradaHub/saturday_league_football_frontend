@@ -1,28 +1,48 @@
-import { PropsWithChildren } from "react";
-import { motion } from "framer-motion";
+import { forwardRef } from "react";
+import { motion, HTMLMotionProps } from "framer-motion";
+import { Card, CardContent, cn } from "@sarradahub/design-system";
 
-interface StatCardProps extends PropsWithChildren {
+interface StatCardProps extends Omit<HTMLMotionProps<"div">, "children"> {
   title: string;
   value: number | string;
   icon: React.ReactNode;
-  accentColorClassName: string;
+  accentColorClassName?: string;
+  className?: string;
 }
 
-const StatCard = ({ title, value, icon, accentColorClassName }: StatCardProps) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.3 }}
-    className={`flex items-center justify-between rounded-xl border-l-4 bg-white p-4 shadow-md ${accentColorClassName}`}
-  >
-    <div>
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-    </div>
-    <div className="text-2xl text-gray-700">{icon}</div>
-  </motion.div>
+const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
+  ({ title, value, icon, accentColorClassName, className, ...props }, ref) => (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.3 }}
+      className={className}
+      {...props}
+    >
+      <Card
+        variant="elevated"
+        padding="md"
+        className={cn(
+          "flex items-center justify-between border-l-4",
+          accentColorClassName,
+        )}
+      >
+        <CardContent className="flex items-center justify-between w-full p-0">
+          <div>
+            <p className="text-sm text-neutral-500">{title}</p>
+            <p className="text-2xl font-bold text-neutral-900">{value}</p>
+          </div>
+          <div className="text-2xl text-neutral-700" aria-hidden="true">
+            {icon}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  ),
 );
 
-export default StatCard;
+StatCard.displayName = "StatCard";
 
+export default StatCard;

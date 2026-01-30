@@ -9,7 +9,9 @@ import championshipRepository from "@/features/championships/api/championshipRep
 import roundRepository from "@/features/rounds/api/roundRepository";
 import CreateRoundModal from "@/features/rounds/components/CreateRoundModal";
 import Container from "@/shared/components/layout/Container";
-import { typography } from "@/shared/styles/tokens";
+import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
+import { Alert } from "@sarradahub/design-system";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Round } from "@/types";
 
 const queryKeys = {
@@ -22,10 +24,12 @@ const ChampionshipDetailsPage = () => {
   const queryClient = useQueryClient();
   const championshipId = Number(params.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [toast, setToast] = useState<{ open: boolean; message: string | null }>({
-    open: false,
-    message: null,
-  });
+  const [toast, setToast] = useState<{ open: boolean; message: string | null }>(
+    {
+      open: false,
+      message: null,
+    },
+  );
 
   const {
     data: championship,
@@ -38,10 +42,15 @@ const ChampionshipDetailsPage = () => {
   });
 
   const createRoundMutation = useMutation({
-    mutationFn: (payload: { name: string; round_date: string; championship_id: number }) =>
-      roundRepository.createRound(payload),
+    mutationFn: (payload: {
+      name: string;
+      round_date: string;
+      championship_id: number;
+    }) => roundRepository.createRound(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.championship(championshipId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.championship(championshipId),
+      });
       setToast({ open: true, message: "Rodada criada com sucesso!" });
       setIsModalOpen(false);
     },
@@ -49,7 +58,9 @@ const ChampionshipDetailsPage = () => {
       setToast({
         open: true,
         message:
-          mutationError instanceof Error ? mutationError.message : "Falha ao criar rodada.",
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Falha ao criar rodada.",
       });
     },
   });
@@ -57,7 +68,10 @@ const ChampionshipDetailsPage = () => {
   const rounds = useMemo(() => championship?.rounds ?? [], [championship]);
   const players = useMemo(() => championship?.players ?? [], [championship]);
 
-  const handleCloseToast = (_event: Event | React.SyntheticEvent, reason?: SnackbarCloseReason) => {
+  const handleCloseToast = (
+    _event: Event | React.SyntheticEvent,
+    reason?: SnackbarCloseReason,
+  ) => {
     if (reason === "clickaway") return;
     setToast({ open: false, message: null });
   };
@@ -73,7 +87,11 @@ const ChampionshipDetailsPage = () => {
   }
 
   if (isLoading) {
-    return <div className="mt-24 flex min-h-screen items-center justify-center">Carregando...</div>;
+    return (
+      <div className="mt-24 flex min-h-screen items-center justify-center">
+        <LoadingSpinner size="lg" text="Carregando..." />
+      </div>
+    );
   }
 
   if (error || !championship) {
@@ -85,108 +103,123 @@ const ChampionshipDetailsPage = () => {
           : "Pelada não encontrada.";
     return (
       <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-red-50 px-4 py-3 text-red-600">{message}</span>
+        <Alert variant="error" title="Erro">
+          {message}
+        </Alert>
       </div>
     );
   }
 
   return (
-    <div
-      className="mt-24 min-h-screen bg-gray-50 py-8"
-      style={{ fontFamily: typography.fontFamily }}
-    >
+    <div className="mt-24 min-h-screen bg-gray-50 py-8 font-sans">
       <Container>
-        <div className="flex flex-col gap-8">
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="mb-4 inline-flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-800"
-          >
-            <FaArrowLeft aria-hidden />
-            Voltar
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">{championship.name}</h1>
-          {championship.description && (
-            <p className="mt-2 text-gray-600">{championship.description}</p>
-          )}
-          <dl className="mt-6 grid grid-cols-1 gap-4 text-sm text-gray-600 sm:grid-cols-2">
-            <div>
-              <dt className="font-semibold text-gray-800">Criada em</dt>
-              <dd>{format(new Date(championship.created_at), "dd/MM/yyyy")}</dd>
-            </div>
-            <div>
-              <dt className="font-semibold text-gray-800">Última atualização</dt>
-              <dd>{format(new Date(championship.updated_at), "dd/MM/yyyy")}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-gray-900">Rodadas</h2>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
             <button
               type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition-colors hover:bg-blue-700"
+              onClick={() => navigate(-1)}
+              className="mb-4 inline-flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              aria-label="Voltar para página anterior"
             >
-              <FaPlus aria-hidden />
-              Nova Rodada
+              <FaArrowLeft aria-hidden="true" />
+              Voltar
             </button>
-          </div>
-          {rounds.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {rounds.map((round: Round) => (
-                <motion.button
-                  key={round.id}
-                  type="button"
-                  whileHover={{ scale: 1.01 }}
-                  className="rounded-xl border border-gray-100 p-4 text-left shadow-sm transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onClick={() => navigate(`/rounds/${round.id}`)}
-                >
-                  <h3 className="text-lg font-semibold text-gray-900">{round.name}</h3>
-                  <p className="mt-2 text-sm text-gray-600">
-                    {format(new Date(round.round_date), "dd/MM/yyyy")}
-                  </p>
-                </motion.button>
-              ))}
-            </div>
-          ) : (
-            <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
-              Nenhuma rodada cadastrada ainda.
-            </p>
-          )}
-        </section>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {championship.name}
+            </h1>
+            {championship.description && (
+              <p className="mt-2 text-gray-600">{championship.description}</p>
+            )}
+            <dl className="mt-6 grid grid-cols-1 gap-4 text-sm text-gray-600 sm:grid-cols-2">
+              <div>
+                <dt className="font-semibold text-gray-800">Criada em</dt>
+                <dd>
+                  {format(new Date(championship.created_at), "dd/MM/yyyy")}
+                </dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-gray-800">
+                  Última atualização
+                </dt>
+                <dd>
+                  {format(new Date(championship.updated_at), "dd/MM/yyyy")}
+                </dd>
+              </div>
+            </dl>
+          </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
-          <h2 className="text-2xl font-semibold text-gray-900">Jogadores</h2>
-          {players.length > 0 ? (
-            <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {players.map((player) => (
-                <li key={player.id}>
-                  <button
+          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-gray-900">Rodadas</h2>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-label="Criar nova rodada"
+              >
+                <FaPlus aria-hidden="true" />
+                Nova Rodada
+              </button>
+            </div>
+            {rounds.length > 0 ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {rounds.map((round: Round) => (
+                  <motion.button
+                    key={round.id}
                     type="button"
-                    onClick={() => navigate(`/players/${player.id}`)}
-                    className="flex w-full items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    whileHover={{ scale: 1.01 }}
+                    className="rounded-xl border border-gray-100 p-4 text-left shadow-sm transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={() => navigate(`/rounds/${round.id}`)}
                   >
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                      {player.name.charAt(0).toUpperCase()}
-                    </span>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-gray-900">{player.name}</span>
-                      <span className="text-xs text-gray-500">
-                        Participou de {player.rounds?.length ?? 0} rodadas
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {round.name}
+                    </h3>
+                    <p className="mt-2 text-sm text-gray-600">
+                      {format(new Date(round.round_date), "dd/MM/yyyy")}
+                    </p>
+                  </motion.button>
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
+                Nenhuma rodada cadastrada ainda.
+              </p>
+            )}
+          </section>
+
+          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
+            <h2 className="text-2xl font-semibold text-gray-900">Jogadores</h2>
+            {players.length > 0 ? (
+              <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {players.map((player) => (
+                  <li key={player.id}>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/players/${player.id}`)}
+                      className="flex w-full items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                        {player.name.charAt(0).toUpperCase()}
                       </span>
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-4 text-gray-500">Nenhum jogador cadastrado nesta pelada.</p>
-          )}
-        </section>
-      </div>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gray-900">
+                          {player.name}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          Participou de {player.rounds?.length ?? 0} rodadas
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-4 text-gray-500">
+                Nenhum jogador cadastrado nesta pelada.
+              </p>
+            )}
+          </section>
+        </div>
       </Container>
       {isModalOpen && (
         <CreateRoundModal
@@ -209,7 +242,9 @@ const ChampionshipDetailsPage = () => {
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         sx={{
           "& .MuiSnackbarContent-root": {
-            backgroundColor: toast.message?.includes("sucesso") ? "#2563eb" : "#b91c1c",
+            backgroundColor: toast.message?.includes("sucesso")
+              ? colors.primary[600]
+              : colors.error[700],
             color: "#fff",
           },
         }}
@@ -219,4 +254,3 @@ const ChampionshipDetailsPage = () => {
 };
 
 export default ChampionshipDetailsPage;
-

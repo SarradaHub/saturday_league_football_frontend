@@ -25,7 +25,9 @@ class PlayerRepository extends BaseService<
   }
 
   list(championshipId?: number) {
-    const params = championshipId ? { championship_id: championshipId } : undefined;
+    const params = championshipId
+      ? { championship_id: championshipId }
+      : undefined;
     return super.getAll(params);
   }
 
@@ -58,15 +60,19 @@ class PlayerRepository extends BaseService<
   }
 
   matchStats(id: number, matchId: number, teamId: number, roundId: number) {
-    return this.executeRequest<PlayerStat[]>("GET", `/${id}/match_stats`, undefined, {
-      match_id: matchId,
-      team_id: teamId,
-      round_id: roundId,
-    }).then((response) => this.handleResponse(response));
+    return this.executeRequest<PlayerStat[]>(
+      "GET",
+      `/${id}/match_stats`,
+      undefined,
+      {
+        match_id: matchId,
+        team_id: teamId,
+        round_id: roundId,
+      },
+    ).then((response) => this.handleResponse(response));
   }
 }
 
 const playerRepository = new PlayerRepository();
 
 export default playerRepository;
-

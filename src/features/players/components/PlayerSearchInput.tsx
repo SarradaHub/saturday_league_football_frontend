@@ -38,7 +38,9 @@ const PlayerSearchInput = ({
       />
       <FaSearch className="absolute left-3 top-3.5 text-gray-400" aria-hidden />
       {isLoading && (
-        <span className="absolute right-3 top-3.5 text-sm text-gray-500">Carregando...</span>
+        <span className="absolute right-3 top-3.5 text-sm text-gray-500">
+          Carregando...
+        </span>
       )}
     </div>
     {!selectedPlayer && searchTerm && (
@@ -61,7 +63,9 @@ const PlayerSearchInput = ({
           ))
         ) : (
           <div className="px-3 py-2 text-sm text-gray-500">
-            {isLoading ? "Carregando jogadores..." : "Nenhum jogador encontrado"}
+            {isLoading
+              ? "Carregando jogadores..."
+              : "Nenhum jogador encontrado"}
           </div>
         )}
       </div>
@@ -70,4 +74,3 @@ const PlayerSearchInput = ({
 );
 
 export default PlayerSearchInput;
-

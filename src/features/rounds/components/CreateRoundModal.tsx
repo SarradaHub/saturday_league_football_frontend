@@ -80,15 +80,12 @@ const CreateRoundModal = ({
       <form
         id="round-form"
         onSubmit={(event) =>
-          handleSubmit(
-            async (payload) => {
-              await onCreate({
-                ...payload,
-                championship_id: Number(payload.championship_id),
-              });
-            },
-            event,
-          )
+          handleSubmit(async (payload) => {
+            await onCreate({
+              ...payload,
+              championship_id: Number(payload.championship_id),
+            });
+          }, event)
         }
       >
         <FormInput
@@ -129,4 +126,3 @@ const CreateRoundModal = ({
 };
 
 export default CreateRoundModal;
-

@@ -16,7 +16,11 @@
     "jsx": "react-jsx",
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@sarradahub/design-system": ["../../platform/design-system/dist/index"],
+      "@sarradahub/design-system/tokens": [
+        "../../platform/design-system/dist/tokens/index"
+      ]
     },
 
     /* Linting */

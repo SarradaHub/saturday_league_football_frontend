@@ -36,4 +36,3 @@ class TeamRepository extends BaseService<
 const teamRepository = new TeamRepository();
 
 export default teamRepository;
-

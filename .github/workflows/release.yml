@@ -1,0 +1,22 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g., v1.0.0)"
+        required: true
+        type: string
+
+jobs:
+  release:
+    uses: SarradaHub/platform/.github/workflows/release.yaml@main
+    with:
+      node-version: "20"
+      working-directory: .
+      install-command: npm ci
+      build-command: npm run build
+      build-paths: dist
