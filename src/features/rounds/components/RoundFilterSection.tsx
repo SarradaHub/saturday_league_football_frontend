@@ -22,16 +22,16 @@ const RoundFilterSection = ({
   onRoundChange,
   existingPlayers,
 }: RoundFilterSectionProps) => {
-  if (context !== "round" || rounds.length === 0) {
+  if (rounds.length === 0) {
     return null;
   }
 
   return (
     <div style={{ padding: "0.5rem 0.5rem 0 0.5rem" }}>
       <div style={{ marginBottom: "0.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Label htmlFor="round-filter-select" style={{ fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}>
+        <label htmlFor="round-filter-select" style={{ fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}>
           Filtrar por rodada:
-        </Label>
+        </label>
         <Button
           type="button"
           variant="text"
@@ -47,15 +47,23 @@ const RoundFilterSection = ({
           <Select
             id="round-filter-select"
             name="round-filter-select"
-            value={String(selectedRoundId ?? "")}
-            onChange={(event) => onRoundChange(Number(event.target.value))}
-            options={rounds.map((round) => ({
-              value: String(round.id),
-              label: `${round.name} (${format(new Date(round.round_date), "dd/MM/yyyy")})`,
-            }))}
+            value={selectedRoundId ? String(selectedRoundId) : ""}
+            onChange={(event) => {
+              const value = event.target.value;
+              onRoundChange(value ? Number(value) : 0);
+            }}
+            options={[
+              { value: "", label: "Todas as rodadas" },
+              ...rounds.map((round) => ({
+                value: String(round.id),
+                label: `${round.name} (${format(new Date(round.round_date), "dd/MM/yyyy")})`,
+              })),
+            ]}
           />
           <p style={{ fontSize: "0.75rem", color: "#737373" }}>
-            Exibindo {existingPlayers.length} jogadores desta rodada.
+            {selectedRoundId
+              ? `Exibindo ${existingPlayers.length} jogadores da rodada selecionada.`
+              : "Selecione uma rodada para filtrar os jogadores."}
           </p>
         </div>
       )}

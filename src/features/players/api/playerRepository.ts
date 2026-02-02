@@ -3,6 +3,7 @@ import { Player, PlayerStat } from "@/types";
 
 export interface PlayerFilters extends QueryParams {
   championship_id?: number;
+  round_id?: number;
   fields?: string;
   include?: string;
 }

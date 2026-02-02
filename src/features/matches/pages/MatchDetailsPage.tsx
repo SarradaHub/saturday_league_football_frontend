@@ -28,6 +28,7 @@ interface TeamBreakdown {
   assists: Player[];
   goalsScorer: Player[];
   ownGoals: Player[];
+  goalkeepers: Player[];
 }
 
 const buildTeamBreakdown = (
@@ -42,6 +43,7 @@ const buildTeamBreakdown = (
     assists: (match[`${teamSide}_assists`] as Player[]) ?? [],
     goalsScorer: (match[`${teamSide}_goals_scorer`] as Player[]) ?? [],
     ownGoals: (match[`${opponentSide}_own_goals_scorer`] as Player[]) ?? [],
+    goalkeepers: (match[`${teamSide}_goalkeepers`] as Player[]) ?? [],
   };
 };
 
@@ -186,11 +188,13 @@ const MatchDetailsPage = () => {
       setToast({ open: true, message: "Estatísticas atualizadas com sucesso!" });
       setIsEditStatsModalOpen(false);
       // Invalidate and refetch match query to get updated statistics
-      await queryClient.invalidateQueries({ queryKey: queryKeys.match(matchId) });
+      // First invalidate to mark as stale
+      queryClient.invalidateQueries({ queryKey: queryKeys.match(matchId) });
+      // Then refetch to get fresh data
       const updatedMatch = await refetchMatch();
-      // Also invalidate round if we have round_id
+      // Also invalidate round if we have round_id to update standings
       if (updatedMatch.data?.round_id) {
-        await queryClient.invalidateQueries({
+        queryClient.invalidateQueries({
           queryKey: queryKeys.round(updatedMatch.data.round_id),
         });
       }
@@ -314,11 +318,11 @@ const MatchDetailsPage = () => {
                     variant="primary"
                     size="sm"
                     onClick={() => finalizeMatchMutation.mutate()}
-                    disabled={(!team1?.goals && !team2?.goals) || finalizeMatchMutation.isPending || (match?.winning_team !== null && !match?.draw)}
+                    disabled={(!team1?.players?.length || !team2?.players?.length) || finalizeMatchMutation.isPending || (match?.winning_team !== null || match?.draw === true)}
                     loading={finalizeMatchMutation.isPending}
                     leftIcon={FaTrophy}
                     aria-label="Finalizar partida"
-                    title={match?.winning_team !== null && !match?.draw ? "Partida já finalizada" : !team1?.goals && !team2?.goals ? "Adicione estatísticas antes de finalizar" : "Finalizar partida e definir vencedor"}
+                    title={match?.winning_team !== null || match?.draw === true ? "Partida já finalizada" : !team1?.players?.length || !team2?.players?.length ? "Adicione jogadores aos times antes de finalizar" : "Finalizar partida e definir vencedor"}
                   >
                     {finalizeMatchMutation.isPending ? "Finalizando..." : "Finalizar"}
                   </Button>
@@ -378,7 +382,12 @@ const MatchDetailsPage = () => {
           isOpen={isEditStatsModalOpen}
           onClose={() => setIsEditStatsModalOpen(false)}
           onSave={async (playerStats) => {
-            await updateStatsMutation.mutateAsync(playerStats);
+            try {
+              await updateStatsMutation.mutateAsync(playerStats);
+            } catch (error) {
+              // Error is already handled in mutation onError
+              throw error;
+            }
           }}
           match={match}
         />
@@ -482,6 +491,11 @@ const TeamColumn = ({ team, align }: TeamColumnProps) => {
         "Gols Contra",
         team.ownGoals,
         "Nenhum gol contra registrado.",
+      )}
+      {renderList(
+        "Goleiros",
+        team.goalkeepers,
+        "Nenhum goleiro registrado.",
       )}
       <div>
         <h4 style={{ fontSize: "0.875rem", fontWeight: 600, color: "#737373", ...textAlignStyle }}>

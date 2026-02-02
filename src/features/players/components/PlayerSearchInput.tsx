@@ -44,33 +44,34 @@ const PlayerSearchInput = ({
         </span>
       )}
     </div>
-    {!selectedPlayer && searchTerm && (
+    {!selectedPlayer && filteredPlayers.length > 0 && (
       <div
         role="listbox"
         style={{ maxHeight: "15rem", overflowY: "auto", borderRadius: "0.5rem", border: "1px solid #e5e5e5", backgroundColor: "#fafafa", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
       >
-        {filteredPlayers.length > 0 ? (
-          filteredPlayers.map((player) => (
-            <button
-              key={player.id}
-              type="button"
-              role="option"
-              aria-selected={false}
-              onClick={() => onSelectPlayer(player)}
-              style={{ width: "100%", borderBottom: "1px solid #e5e5e5", padding: "0.5rem 0.75rem", textAlign: "left", fontSize: "0.875rem", transition: "background-color 0.2s", backgroundColor: "transparent", borderLeft: "none", borderRight: "none", borderTop: "none", cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafafa"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-            >
-              {player.name}
-            </button>
-          ))
-        ) : (
-          <div style={{ padding: "0.5rem 0.75rem", fontSize: "0.875rem", color: "#737373" }}>
-            {isLoading
-              ? "Carregando jogadores..."
-              : "Nenhum jogador encontrado"}
-          </div>
-        )}
+        {filteredPlayers.map((player) => (
+          <button
+            key={player.id}
+            type="button"
+            role="option"
+            aria-selected={false}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onSelectPlayer(player);
+            }}
+            style={{ width: "100%", borderBottom: "1px solid #e5e5e5", padding: "0.5rem 0.75rem", textAlign: "left", fontSize: "0.875rem", transition: "background-color 0.2s", backgroundColor: "transparent", borderLeft: "none", borderRight: "none", borderTop: "none", cursor: "pointer" }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f0f0f0"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          >
+            {player.name}
+          </button>
+        ))}
+      </div>
+    )}
+    {!selectedPlayer && !isLoading && filteredPlayers.length === 0 && searchTerm && (
+      <div style={{ padding: "0.5rem 0.75rem", fontSize: "0.875rem", color: "#737373", borderRadius: "0.5rem", border: "1px solid #e5e5e5", backgroundColor: "#fafafa" }}>
+        Nenhum jogador encontrado
       </div>
     )}
   </div>

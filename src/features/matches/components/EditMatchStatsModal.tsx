@@ -36,6 +36,7 @@ const EditMatchStatsModal = ({
 }: EditMatchStatsModalProps) => {
   const [existingStats, setExistingStats] = useState<PlayerStat[]>([]);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [statsLoaded, setStatsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Get players from both teams
@@ -44,7 +45,7 @@ const EditMatchStatsModal = ({
   const team1Id = match?.team_1?.id;
   const team2Id = match?.team_2?.id;
 
-  // Initialize form data for all players
+  // Initialize form data for all players - only compute when stats are loaded
   const initialFormData = useMemo(() => {
     const data: Record<string, PlayerStatFormData> = {};
     
@@ -95,29 +96,40 @@ const EditMatchStatsModal = ({
   useEffect(() => {
     if (isOpen && match?.id) {
       setIsLoadingStats(true);
+      setStatsLoaded(false);
       setError(null);
+      setExistingStats([]); // Reset stats when modal opens
       playerStatsRepository
         .findByMatchId(match.id)
         .then((stats) => {
           // Ensure stats is always an array
-          setExistingStats(Array.isArray(stats) ? stats : []);
+          const statsArray = Array.isArray(stats) ? stats : [];
+          setExistingStats(statsArray);
+          setStatsLoaded(true);
         })
         .catch((err) => {
           setError(err instanceof Error ? err.message : "Erro ao carregar estatísticas");
           setExistingStats([]);
+          setStatsLoaded(true); // Mark as loaded even on error so form can be shown
         })
         .finally(() => {
           setIsLoadingStats(false);
         });
+    } else if (!isOpen) {
+      // Reset when modal closes
+      setExistingStats([]);
+      setStatsLoaded(false);
     }
   }, [isOpen, match?.id]);
 
-  // Update form data when existing stats change
+  // Update form data when existing stats are loaded or change
   useEffect(() => {
+    if (!statsLoaded) return; // Don't update form until stats are loaded
+    
     // Ensure existingStats is always an array
     const statsArray = Array.isArray(existingStats) ? existingStats : [];
     
-    if (statsArray.length > 0 || (team1Players.length > 0 && team2Players.length > 0)) {
+    if (team1Players.length > 0 || team2Players.length > 0) {
       const newFormData: Record<string, PlayerStatFormData> = {};
 
       team1Players.forEach((player) => {
@@ -150,12 +162,13 @@ const EditMatchStatsModal = ({
 
       setFormData(newFormData);
     }
-  }, [existingStats, team1Players, team2Players, team1Id, team2Id, setFormData]);
+  }, [statsLoaded, existingStats, team1Players, team2Players, team1Id, team2Id, setFormData]);
 
   const handleClose = () => {
     resetForm();
     setError(null);
     setExistingStats([]);
+    setStatsLoaded(false);
     onClose();
   };
 

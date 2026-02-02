@@ -45,7 +45,9 @@ const CreatePlayerModal = ({
     () => (routeIdParam ? Number(routeIdParam) : undefined),
     [routeIdParam],
   );
-  const targetId = context === "team" ? routeId : (selectedRoundId ?? routeId);
+  // targetId is always the current page's round/team (from URL), not the filter
+  // Filter is only for viewing players from other rounds
+  const targetId = context === "team" ? routeId : routeId;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [existingPlayers, setExistingPlayers] = useState<Player[]>([]);
@@ -72,11 +74,28 @@ const CreatePlayerModal = ({
     const fetchPlayers = async () => {
       setIsLoading(true);
       try {
-        const players = await playerRepository.list(championshipId);
+        // Use round_id parameter for efficient filtering
+        // If filter is active (selectedRoundId), use it; otherwise use targetId (current round)
+        let roundIdParam: number | undefined = undefined;
+        if (context === "round") {
+          if (selectedRoundId && selectedRoundId > 0) {
+            // Filter is active - use selected round from filter
+            roundIdParam = selectedRoundId;
+          } else if (targetId) {
+            // No filter - use current round where modal is open
+            roundIdParam = targetId;
+          }
+        }
+        
+        const players = await playerRepository.list(championshipId, {
+          round_id: roundIdParam,
+        });
+        
         const availablePlayers = players.filter(
           (player) =>
             !currentPlayersRef.current.some((p) => p.id === player.id),
         );
+
         setExistingPlayers(availablePlayers);
       } catch (fetchError) {
         setError(
@@ -90,10 +109,13 @@ const CreatePlayerModal = ({
     };
 
     void fetchPlayers();
-  }, [isOpen, championshipId]);
+  }, [isOpen, championshipId, context, selectedRoundId]);
 
   const filteredPlayers = useMemo(() => {
     if (!isOpen) return [];
+    
+    // For team context, use playersFromRound if available and round is selected
+    // Otherwise use existingPlayers (which is already filtered by selected round for round context)
     const candidates =
       context === "team" && selectedRoundId && playersFromRound.length > 0
         ? playersFromRound
@@ -136,7 +158,14 @@ const CreatePlayerModal = ({
         } else {
           await playerRepository.addToTeam(selectedPlayer.id, targetId);
         }
+        // Reset selected player and trigger refetch
+        setSelectedPlayer(null);
+        setSearchTerm("");
         onExistingPlayerAdded?.();
+        // Don't close modal - let user see the updated list
+        // The useEffect will refetch players automatically
+        setIsSubmitting(false);
+        return;
       } else {
         const normalizedName = searchTerm.trim();
         if (!normalizedName) {
@@ -163,8 +192,8 @@ const CreatePlayerModal = ({
           payload.team_id = targetId;
         }
         await onCreate(payload);
+        handleClose();
       }
-      handleClose();
     } catch (submitError) {
       setError(
         submitError instanceof Error
@@ -221,9 +250,15 @@ const CreatePlayerModal = ({
               filteredPlayers={filteredPlayers}
               onSearchChange={(value) => {
                 setSearchTerm(value);
-                setSelectedPlayer(null);
+                // Only clear selectedPlayer if user is typing (not when selecting from list)
+                if (selectedPlayer && value !== selectedPlayer.name) {
+                  setSelectedPlayer(null);
+                }
               }}
-              onSelectPlayer={setSelectedPlayer}
+              onSelectPlayer={(player) => {
+                setSelectedPlayer(player);
+                setSearchTerm(player.name);
+              }}
               onSubmit={() => void handleSubmit()}
               isLoading={isLoading}
             />

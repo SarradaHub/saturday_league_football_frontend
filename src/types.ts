@@ -63,10 +63,12 @@ export interface Match {
   team_1_goals_scorer: Player[];
   team_1_assists: Player[];
   team_1_own_goals_scorer: Player[];
+  team_1_goalkeepers: Player[];
   team_2_goals: number;
   team_2_goals_scorer: Player[];
   team_2_assists: Player[];
   team_2_own_goals_scorer: Player[];
+  team_2_goalkeepers: Player[];
   winning_team: Team | null;
   draw: boolean;
   created_at: string;

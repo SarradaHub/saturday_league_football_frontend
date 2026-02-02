@@ -44,8 +44,20 @@ class PlayerStatsRepository extends BaseService<
   }
 
   findByMatchId(matchId: number) {
-    return this.executeRequest<PlayerStat[]>("GET", `/match/${matchId}`).then(
-      (response) => this.handleResponse(response),
+    return this.executeRequest<{ data: PlayerStat[]; meta?: unknown } | PlayerStat[]>("GET", `/match/${matchId}`).then(
+      (response) => {
+        const result = this.handleResponse(response);
+        // Handle paginated response format: { data: [...], meta: {...} }
+        if (result && typeof result === 'object' && 'data' in result && Array.isArray(result.data)) {
+          return result.data;
+        }
+        // Handle direct array response
+        if (Array.isArray(result)) {
+          return result;
+        }
+        // Fallback to empty array
+        return [];
+      },
     );
   }
 
