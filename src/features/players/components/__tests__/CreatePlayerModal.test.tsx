@@ -109,7 +109,8 @@ describe("CreatePlayerModal", () => {
 
     await waitFor(() =>
       expect(onCreate).toHaveBeenCalledWith({
-        name: "Novo Jogador",
+        first_name: "Novo",
+        last_name: "Jogador",
         championship_id: championshipId,
         player_rounds_attributes: [{ round_id: roundId }],
       }),
@@ -137,7 +138,7 @@ describe("CreatePlayerModal", () => {
   it("calls onExistingPlayerAdded after adding an existing player to a round", async () => {
     const existingPlayer: Player = {
       id: 5,
-      name: "João da Silva",
+      display_name: "João da Silva",
       position: undefined,
       championship_id: 1,
       created_at: "",
@@ -164,7 +165,7 @@ describe("CreatePlayerModal", () => {
     await user.type(input, "Jo");
 
     const option = await screen.findByRole("option", {
-      name: existingPlayer.name,
+      name: existingPlayer.display_name,
     });
     await user.click(option);
 

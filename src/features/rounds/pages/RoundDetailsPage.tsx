@@ -3,12 +3,16 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import {
   FaArrowLeft,
+  FaEdit,
   FaFutbol,
+  FaLock,
+  FaLockOpen,
   FaPlus,
   FaSearch,
+  FaTrash,
   FaUser,
   FaUsers,
 } from "react-icons/fa";
@@ -22,6 +26,9 @@ import CreateTeamModal from "@/features/teams/components/CreateTeamModal";
 import SelectMatchWinnerModal from "@/features/rounds/components/SelectMatchWinnerModal";
 import SuggestedMatchPreviewModal from "@/features/rounds/components/SuggestedMatchPreviewModal";
 import RoundStatisticsSection from "@/features/rounds/components/RoundStatisticsSection";
+import SubstitutePlayerModal from "@/features/rounds/components/SubstitutePlayerModal";
+import EditRoundModal from "@/features/rounds/components/EditRoundModal";
+import DeleteRoundModal from "@/features/rounds/components/DeleteRoundModal";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert, Input } from "@platform/design-system";
 import { colors } from "@platform/design-system/tokens";
@@ -44,12 +51,18 @@ const RoundDetailsPage = () => {
 
   const [isMatchModalOpen, setMatchModalOpen] = useState(false);
   const [isPlayerModalOpen, setPlayerModalOpen] = useState(false);
+  const [isPlayerModalGoalkeeperMode, setPlayerModalGoalkeeperMode] = useState(false);
   const [isTeamModalOpen, setTeamModalOpen] = useState(false);
+  const [isSubstituteModalOpen, setSubstituteModalOpen] = useState(false);
+  const [isEditRoundModalOpen, setEditRoundModalOpen] = useState(false);
+  const [isDeleteRoundModalOpen, setDeleteRoundModalOpen] = useState(false);
+  const [isRebalancing, setIsRebalancing] = useState(false);
   const [isNextMatchLoading, setNextMatchLoading] = useState(false);
   const [isWinnerModalOpen, setWinnerModalOpen] = useState(false);
   const [isPreviewModalOpen, setPreviewModalOpen] = useState(false);
   const [winnerCandidates, setWinnerCandidates] = useState<Team[]>([]);
   const [nextOpponent, setNextOpponent] = useState<Team | undefined>(undefined);
+  const [winnerSelectionReason, setWinnerSelectionReason] = useState<string | undefined>(undefined);
   const [teamQueue, setTeamQueue] = useState<Team[]>([]);
   const [suggestedMatch, setSuggestedMatch] = useState<{
     name: string;
@@ -78,21 +91,17 @@ const RoundDetailsPage = () => {
     refetchOnWindowFocus: false, // Prevent refetch on window focus
   });
 
-  // Fetch all rounds from the championship for player filtering (only when modal is open)
   const championshipId = round?.championship_id ?? null;
   const {
     data: allRounds,
-    isLoading: isLoadingRounds,
   } = useQuery({
     queryKey: ["rounds", "championship", championshipId],
     queryFn: async () => {
       if (!championshipId) return [];
-      // Use a reasonable page size instead of 1000 to avoid timeout
       const rounds = await roundRepository.list({ per_page: 100 });
-      // Filter rounds by championship_id on frontend since API doesn't support it directly
       return Array.isArray(rounds) ? rounds.filter((r) => r.championship_id === championshipId) : [];
     },
-    enabled: !!championshipId && Number.isFinite(championshipId) && isPlayerModalOpen, // Only fetch when modal is open
+    enabled: !!championshipId && Number.isFinite(championshipId) && isPlayerModalOpen,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes to prevent unnecessary refetches
     refetchOnWindowFocus: false, // Prevent refetch on window focus
     refetchOnMount: false, // Only refetch if data is stale
@@ -103,7 +112,6 @@ const RoundDetailsPage = () => {
   const handleExistingPlayerAdded = () => {
     setToast({ open: true, message: "Jogador adicionado com sucesso!" });
     invalidateRound();
-    // Also invalidate players queries to refresh the modal's player list
     queryClient.invalidateQueries({ queryKey: ["players"] });
   };
 
@@ -124,6 +132,44 @@ const RoundDetailsPage = () => {
       }),
   });
 
+  const removePlayerMutation = useMutation({
+    mutationFn: ({ playerId }: { playerId: number }) =>
+      roundRepository.removePlayer(roundId, playerId),
+    onSuccess: () => {
+      setToast({ open: true, message: "Jogador removido da rodada." });
+      invalidateRound();
+    },
+    onError: (mutationError) =>
+      setToast({
+        open: true,
+        message:
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao remover jogador da rodada.",
+      }),
+  });
+
+  const toggleBlockMutation = useMutation({
+    mutationFn: ({ playerId }: { playerId: number }) =>
+      roundRepository.togglePlayerBlock(roundId, playerId),
+    onSuccess: (_, variables) => {
+      const wasBlocked = (round?.players ?? []).find((p) => p.id === variables.playerId)?.blocked;
+      setToast({
+        open: true,
+        message: wasBlocked ? "Jogador desbloqueado." : "Jogador bloqueado na rodada.",
+      });
+      invalidateRound();
+    },
+    onError: (mutationError) =>
+      setToast({
+        open: true,
+        message:
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao bloquear/desbloquear jogador.",
+      }),
+  });
+
   const handleGenerateNextMatch = async () => {
     if (!Number.isFinite(roundId)) {
       return;
@@ -133,12 +179,12 @@ const RoundDetailsPage = () => {
     try {
       const suggestion = await roundRepository.suggestNextMatch(roundId);
 
-      // Store queue from suggestion
-      setTeamQueue(suggestion.queue ?? []);
+      setTeamQueue((suggestion.queue ?? []).filter((t) => !t.is_blocked));
 
       if (suggestion.needs_winner_selection) {
         setWinnerCandidates(suggestion.candidates ?? []);
         setNextOpponent(suggestion.next_opponent);
+        setWinnerSelectionReason(suggestion.reason);
         setWinnerModalOpen(true);
         return;
       }
@@ -165,14 +211,14 @@ const RoundDetailsPage = () => {
     setNextMatchLoading(true);
     try {
       const result = await roundRepository.createNextMatch(roundId, winnerTeamId);
-      // Update queue if returned in response
       if (result && typeof result === 'object' && 'queue' in result) {
-        setTeamQueue((result as { queue: Team[] }).queue ?? []);
+        setTeamQueue(((result as { queue: Team[] }).queue ?? []).filter((t) => !t.is_blocked));
       }
       setToast({ open: true, message: "Próxima partida criada com sucesso!" });
       setWinnerModalOpen(false);
       setWinnerCandidates([]);
       setNextOpponent(undefined);
+      setWinnerSelectionReason(undefined);
       invalidateRound();
     } catch (error) {
       setToast({
@@ -188,9 +234,8 @@ const RoundDetailsPage = () => {
     setNextMatchLoading(true);
     try {
       const result = await roundRepository.createNextMatch(roundId);
-      // Update queue if returned in response
       if (result && typeof result === 'object' && 'queue' in result) {
-        setTeamQueue((result as { queue: Team[] }).queue ?? []);
+        setTeamQueue(((result as { queue: Team[] }).queue ?? []).filter((t) => !t.is_blocked));
       }
       setToast({ open: true, message: "Próxima partida criada com sucesso!" });
       setPreviewModalOpen(false);
@@ -250,13 +295,13 @@ const RoundDetailsPage = () => {
     if (allRounds && allRounds.length > 0) return allRounds;
     if (round) return [round];
     return [];
-  }, [allRounds, round?.id, round]); // Include round for the fallback case
+  }, [allRounds, round]);
 
   const filteredPlayers = useMemo(() => {
     const normalized = playerSearch.trim().toLowerCase();
     if (!normalized) return players;
     return players.filter((player) =>
-      player.name.toLowerCase().includes(normalized),
+      player.display_name.toLowerCase().includes(normalized),
     );
   }, [players, playerSearch]);
 
@@ -266,40 +311,31 @@ const RoundDetailsPage = () => {
     return teams.filter((team) => team.name.toLowerCase().includes(normalized));
   }, [teams, teamSearch]);
 
-  // Auto-update team queue when round is updated (e.g., after match is finalized)
   useEffect(() => {
-    if (!round || !Number.isFinite(roundId) || isNextMatchLoading) return;
+    if (!round || !Number.isFinite(roundId)) return;
 
-    // Check if there are any finalized matches (with winner or draw set)
     const finalizedMatches = matches.filter(
-      (match) => match.draw === true || match.draw === false || match.winning_team !== null
+      (match) =>
+        match.draw === true ||
+        match.draw === false ||
+        match.winning_team !== null,
     );
 
-    // Only update queue if there are finalized matches and we have teams
-    if (finalizedMatches.length > 0 && teams.length >= 2) {
+    if (finalizedMatches.length > 0 && teams.length >= 2 && !isNextMatchLoading) {
       const updateQueue = async () => {
         try {
           const suggestion = await roundRepository.suggestNextMatch(roundId);
-          setTeamQueue(suggestion.queue ?? []);
+          const queue = (suggestion.queue ?? []).filter((t) => !t.is_blocked);
+          setTeamQueue(queue);
         } catch (error) {
-          // Silently fail - queue update is not critical
           console.warn("Failed to update team queue:", error);
         }
       };
-
       updateQueue();
     } else if (finalizedMatches.length === 0) {
-      // Clear queue if no matches are finalized
       setTeamQueue([]);
     }
-  }, [
-    round?.id,
-    // Create a string representation of finalized matches to detect changes
-    matches.map((m) => `${m.id}:${m.winning_team?.id ?? null}:${m.draw}`).join(","),
-    teams.length,
-    roundId,
-    isNextMatchLoading,
-  ]);
+  }, [round, matches, teams.length, roundId, isNextMatchLoading]);
 
   const handleCloseToast = (
     _event: Event | React.SyntheticEvent,
@@ -356,11 +392,35 @@ const RoundDetailsPage = () => {
                   Voltar
                 </Button>
                 <CardHeader>
-                  <CardTitle style={{ fontSize: "1.875rem" }}>{round.name}</CardTitle>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <CardTitle style={{ fontSize: "1.875rem" }}>{round.name}</CardTitle>
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditRoundModalOpen(true)}
+                        leftIcon={FaEdit}
+                        aria-label="Editar rodada"
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteRoundModalOpen(true)}
+                        leftIcon={FaTrash}
+                        aria-label="Excluir rodada"
+                      >
+                        Excluir
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p style={{ color: "#737373" }}>
-                    {format(new Date(round.round_date), "dd MMMM yyyy")}
+                    {format(parse(round.round_date, "yyyy-MM-dd", new Date()), "dd MMMM yyyy")}
                   </p>
                 </CardContent>
               </div>
@@ -454,15 +514,44 @@ const RoundDetailsPage = () => {
                 <FaUsers style={{ color: "#a78bfa" }} aria-hidden />
                 Times
               </CardTitle>
-              <Button
-                type="button"
-                variant="primary"
-                size="md"
-                onClick={() => setTeamModalOpen(true)}
-                leftIcon={FaPlus}
-              >
-                Criar Time
-              </Button>
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  onClick={async () => {
+                    setIsRebalancing(true);
+                    try {
+                      const result = await roundRepository.rebalanceTeams(roundId);
+                      invalidateRound();
+                      setToast({
+                        open: true,
+                        message: `Times rebalanceados! ${result.teams_after} times com ${result.players_after} jogadores.`,
+                      });
+                    } catch (error) {
+                      setToast({
+                        open: true,
+                        message: error instanceof Error ? error.message : "Erro ao rebalancear times.",
+                      });
+                    } finally {
+                      setIsRebalancing(false);
+                    }
+                  }}
+                  loading={isRebalancing}
+                  disabled={isRebalancing || players.length === 0}
+                >
+                  Rebalancear Times
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="md"
+                  onClick={() => setTeamModalOpen(true)}
+                  leftIcon={FaPlus}
+                >
+                  Criar Time
+                </Button>
+              </div>
             </div>
             <div style={{ marginBottom: "1.5rem", position: "relative" }}>
               <Input
@@ -576,7 +665,7 @@ const RoundDetailsPage = () => {
                                   </h3>
                                   {team.players && team.players.length > 0 ? (
                                     <p style={{ fontSize: "0.875rem", color: "#737373" }}>
-                                      {team.players.map((player) => player.name).join(", ")}
+                                      {team.players.map((player) => player.display_name).join(", ")}
                                     </p>
                                   ) : (
                                     <p style={{ fontSize: "0.875rem", color: "#a3a3a3", fontStyle: "italic" }}>
@@ -608,15 +697,40 @@ const RoundDetailsPage = () => {
                 <FaUser style={{ color: "#2563eb" }} aria-hidden />
                 Jogadores
               </CardTitle>
-              <Button
-                type="button"
-                variant="primary"
-                size="md"
-                onClick={() => setPlayerModalOpen(true)}
-                leftIcon={FaPlus}
-              >
-                Adicionar Jogador
-              </Button>
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  onClick={() => setSubstituteModalOpen(true)}
+                  disabled={players.length === 0}
+                >
+                  Substituir Jogador
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  onClick={() => {
+                    setPlayerModalGoalkeeperMode(true);
+                    setPlayerModalOpen(true);
+                  }}
+                >
+                  Adicionar Goleiro
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="md"
+                  onClick={() => {
+                    setPlayerModalGoalkeeperMode(false);
+                    setPlayerModalOpen(true);
+                  }}
+                  leftIcon={FaPlus}
+                >
+                  Adicionar Jogador
+                </Button>
+              </div>
             </div>
             <div style={{ marginBottom: "1.5rem", position: "relative" }}>
               <Input
@@ -648,17 +762,65 @@ const RoundDetailsPage = () => {
                         onClick={() => navigate(`/players/${player.id}`)}
                       >
                         <CardContent>
-                          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                            <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.125rem", fontWeight: 700, color: "#2563eb" }}>
-                              {player.name.charAt(0).toUpperCase()}
-                            </span>
-                            <div>
-                              <h3 style={{ fontWeight: 600, color: "#171717" }}>
-                                {player.name}
-                              </h3>
-                              <p style={{ fontSize: "0.875rem", color: "#737373" }}>
-                                Participou de {player.rounds?.length ?? 0} rodadas
-                              </p>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", minWidth: 0 }}>
+                              <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.125rem", fontWeight: 700, color: "#2563eb", flexShrink: 0 }}>
+                                {player.display_name.charAt(0).toUpperCase()}
+                              </span>
+                              <div style={{ minWidth: 0, flex: 1 }}>
+                                <h3 style={{ fontWeight: 600, color: "#171717", wordBreak: "break-word" }}>
+                                  {player.display_name}
+                                </h3>
+                                {player.goalkeeper_only && (
+                                  <span
+                                    style={{
+                                      display: "inline-block",
+                                      marginTop: "0.25rem",
+                                      fontSize: "0.75rem",
+                                      fontWeight: 500,
+                                      color: "#1e40af",
+                                      backgroundColor: "#dbeafe",
+                                      padding: "0.125rem 0.5rem",
+                                      borderRadius: "9999px",
+                                    }}
+                                    aria-label="Goleiro"
+                                  >
+                                    Goleiro
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                              {typeof player.player_round_id === "number" && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  aria-label={player.blocked ? "Desbloquear jogador" : "Bloquear jogador"}
+                                  leftIcon={player.blocked ? FaLockOpen : FaLock}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleBlockMutation.mutate({ playerId: player.id });
+                                  }}
+                                  disabled={toggleBlockMutation.isPending}
+                                >
+                                  {player.blocked ? "Desbloquear" : "Bloquear"}
+                                </Button>
+                              )}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                aria-label="Remover da rodada"
+                                leftIcon={FaTrash}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removePlayerMutation.mutate({ playerId: player.id });
+                                }}
+                                disabled={removePlayerMutation.isPending}
+                              >
+                                Remover
+                              </Button>
                             </div>
                           </div>
                         </CardContent>
@@ -707,6 +869,7 @@ const RoundDetailsPage = () => {
           isOpen={isWinnerModalOpen}
           candidates={winnerCandidates}
           nextOpponent={nextOpponent}
+          reason={winnerSelectionReason}
           isSubmitting={isNextMatchLoading}
           onClose={() => setWinnerModalOpen(false)}
           onSelect={handleWinnerSelected}
@@ -728,6 +891,7 @@ const RoundDetailsPage = () => {
           onClose={() => {
             setPlayerModalOpen(false);
             setSelectedRoundIdForFilter(null);
+            setPlayerModalGoalkeeperMode(false);
           }}
           onCreate={async (payload) => {
             await playerMutation.mutateAsync(payload);
@@ -738,6 +902,7 @@ const RoundDetailsPage = () => {
           selectedRoundId={selectedRoundIdForFilter ?? roundId}
           onRoundChange={(roundId) => setSelectedRoundIdForFilter(roundId > 0 ? roundId : null)}
           onExistingPlayerAdded={handleExistingPlayerAdded}
+          goalkeeperMode={isPlayerModalGoalkeeperMode}
         />
       )}
       {isTeamModalOpen && (
@@ -748,6 +913,46 @@ const RoundDetailsPage = () => {
             await teamMutation.mutateAsync(payload);
           }}
           roundId={roundId}
+        />
+      )}
+
+      {isSubstituteModalOpen && (
+        <SubstitutePlayerModal
+          isOpen={isSubstituteModalOpen}
+          onClose={() => setSubstituteModalOpen(false)}
+          onSubstitute={() => {
+            invalidateRound();
+            setToast({ open: true, message: "Substituição realizada com sucesso!" });
+          }}
+          round={round}
+          players={players}
+        />
+      )}
+
+      {isEditRoundModalOpen && (
+        <EditRoundModal
+          isOpen={isEditRoundModalOpen}
+          onClose={() => setEditRoundModalOpen(false)}
+          onUpdate={async (id, data) => {
+            await roundRepository.updateRound(id, data);
+            invalidateRound();
+            setToast({ open: true, message: "Rodada atualizada com sucesso!" });
+            setEditRoundModalOpen(false);
+          }}
+          round={round}
+        />
+      )}
+
+      {isDeleteRoundModalOpen && (
+        <DeleteRoundModal
+          isOpen={isDeleteRoundModalOpen}
+          onClose={() => setDeleteRoundModalOpen(false)}
+          onConfirm={async () => {
+            await roundRepository.deleteRound(roundId);
+            setToast({ open: true, message: "Rodada excluída com sucesso!" });
+            navigate(`/championships/${round.championship_id}`);
+          }}
+          round={round}
         />
       )}
 

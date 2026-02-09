@@ -11,7 +11,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  // Mostrar loading enquanto verifica autenticação
   if (isLoading) {
     return (
       <div style={{ display: "flex", minHeight: "60vh", alignItems: "center", justifyContent: "center" }}>
@@ -20,14 +19,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // Se não estiver autenticado, redirecionar para login
   if (!isAuthenticated) {
-    // Salvar a rota atual para redirecionar após login
     const from = location.pathname + location.search;
     return <Navigate to={`/login?from=${encodeURIComponent(from)}`} replace />;
   }
 
-  // Se estiver autenticado, renderizar o componente filho
   return <>{children}</>;
 };
 

@@ -29,8 +29,7 @@ const CreateTeamModal = ({
   });
 
   useEffect(() => {
-    setFormData({ ...formData, round_id: roundId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setFormData((prev) => ({ ...prev, round_id: roundId }));
   }, [roundId, setFormData]);
 
   const handleClose = () => {

@@ -10,7 +10,6 @@ class AuthRepository {
     const config = ApiConfigAdapter.getInstance();
     const baseURL = config.getBaseURL();
 
-    // API do backend (Devise)
     this.api = axios.create({
       baseURL: `${baseURL}/users`,
       timeout: 10000,
@@ -19,7 +18,6 @@ class AuthRepository {
       },
     });
 
-    // API do IdentityService (se necessário)
     const identityServiceURL = import.meta.env.VITE_IDENTITY_SERVICE_URL || "";
     this.identityServiceApi = axios.create({
       baseURL: identityServiceURL,
@@ -30,9 +28,6 @@ class AuthRepository {
     });
   }
 
-  /**
-   * Login usando Devise (autenticação direta no backend)
-   */
   async loginWithDevise(
     credentials: LoginCredentials,
   ): Promise<{ user: User; token: string }> {
@@ -46,7 +41,6 @@ class AuthRepository {
         user: credentials,
       });
 
-      // Verificar se a resposta foi bem-sucedida
       if (response.data.success && response.data.user && response.data.token) {
         return {
           user: response.data.user,
@@ -67,9 +61,6 @@ class AuthRepository {
     }
   }
 
-  /**
-   * Login usando IdentityService
-   */
   async loginWithIdentityService(
     credentials: LoginCredentials,
   ): Promise<{ user: User; token: string }> {
@@ -93,21 +84,14 @@ class AuthRepository {
     }
   }
 
-  /**
-   * Logout usando Devise
-   */
   async logout(): Promise<void> {
     try {
       await this.api.delete("/sign_out");
     } catch (error) {
-      // Não lançar erro se já estiver deslogado
       console.warn("Erro ao fazer logout:", error);
     }
   }
 
-  /**
-   * Validar token com o backend
-   */
   async validateToken(token: string): Promise<User | null> {
     try {
       const config = ApiConfigAdapter.getInstance();
@@ -123,14 +107,11 @@ class AuthRepository {
       );
 
       return response.data.user;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
 
-  /**
-   * Obter usuário atual (usando token armazenado)
-   */
   async getCurrentUser(token: string): Promise<User | null> {
     try {
       const config = ApiConfigAdapter.getInstance();
@@ -146,8 +127,7 @@ class AuthRepository {
       );
 
       return response.data.user;
-    } catch (error) {
-      // Se não houver endpoint /me, tentar validar o token
+    } catch {
       return this.validateToken(token);
     }
   }

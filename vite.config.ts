@@ -102,7 +102,7 @@ export default defineConfig({
     },
     rollupOptions: {
       // Ensure design-system dependencies are resolved from root node_modules
-      external: (_id) => {
+      external: () => {
         // Don't externalize anything - we want to bundle everything
         return false;
       },

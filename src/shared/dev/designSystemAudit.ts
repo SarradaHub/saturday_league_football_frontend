@@ -30,9 +30,7 @@ interface AuditResult {
   passedChecks: number;
 }
 
-// Lista de classes críticas do design system extraídas dos componentes
 const DESIGN_SYSTEM_CLASSES = {
-  // Colors - Primary
   primary: [
     'bg-primary-600',
     'bg-primary-700',
@@ -52,7 +50,6 @@ const DESIGN_SYSTEM_CLASSES = {
     'active:bg-primary-800',
     'active:bg-primary-100',
   ],
-  // Colors - Secondary/Neutral
   neutral: [
     'bg-neutral-200',
     'bg-neutral-300',
@@ -90,7 +87,6 @@ const DESIGN_SYSTEM_CLASSES = {
     'dark:hover:text-neutral-300',
     'dark:hover:bg-neutral-800',
   ],
-  // Colors - Error
   error: [
     'bg-error-600',
     'bg-error-700',
@@ -104,7 +100,6 @@ const DESIGN_SYSTEM_CLASSES = {
     'focus:ring-error-500',
     'active:bg-error-800',
   ],
-  // Layout & Positioning
   layout: [
     'fixed',
     'absolute',
@@ -135,7 +130,6 @@ const DESIGN_SYSTEM_CLASSES = {
     'py-3',
     'mx-4',
   ],
-  // Visual Effects
   effects: [
     'bg-black/50',
     'backdrop-blur-sm',
@@ -148,7 +142,6 @@ const DESIGN_SYSTEM_CLASSES = {
     'opacity-50',
     'pointer-events-none',
   ],
-  // Typography
   typography: [
     'text-sm',
     'text-base',
@@ -158,7 +151,6 @@ const DESIGN_SYSTEM_CLASSES = {
     'font-semibold',
     'text-white',
   ],
-  // States
   states: [
     'focus:outline-none',
     'focus:ring-2',
@@ -178,7 +170,6 @@ const DESIGN_SYSTEM_CLASSES = {
     'gap-2.5',
     'animate-spin',
   ],
-  // Utilities
   utilities: [
     'inline-flex',
     'block',
@@ -234,7 +225,6 @@ const auditCssVariables = (): {
 };
 
 const checkClassExists = (className: string): boolean => {
-  // Cria elemento temporário para testar se a classe existe no CSS
   const testEl = document.createElement('div');
   testEl.className = className;
   testEl.style.position = 'absolute';
@@ -253,29 +243,19 @@ const checkClassExists = (className: string): boolean => {
 };
 
 const hasSpecialCharacters = (className: string): boolean => {
-  // Verifica se a classe contém caracteres que não são válidos em seletores CSS
-  return /[\/\[\]]/.test(className);
+  return className.includes("/") || className.includes("[") || className.includes("]");
 };
 
 const findElementsWithClass = (className: string): Element[] => {
-  // Remove pseudo-classes e variants para buscar elementos
   let baseClass = className.split(':')[0];
-  
-  // Remove arbitrary values como [90vh]
   baseClass = baseClass.replace(/\[.*?\]/g, '');
-  
-  // Se a classe contém caracteres especiais, não tenta buscar no DOM
-  // (classes como bg-primary-900/20 não podem ser usadas em querySelector)
   if (hasSpecialCharacters(baseClass)) {
     return [];
   }
-  
   try {
-    // Escapa caracteres especiais restantes
-    const escaped = baseClass.replace(/([!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~])/g, '\\$1');
+    const escaped = baseClass.replace(/([!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, "\\$1");
     return Array.from(document.querySelectorAll(`.${escaped}`));
-  } catch (e) {
-    // Se ainda falhar, retorna array vazio
+  } catch {
     return [];
   }
 };
@@ -285,8 +265,6 @@ const checkClassOverridden = (
   elements: Element[],
 ): ClassCheckResult['elements'] => {
   const issues: ClassCheckResult['elements'] = [];
-  
-  // Para classes de cor, verifica se o valor computado corresponde ao esperado
   if (className.startsWith('bg-')) {
     const testEl = document.createElement('div');
     testEl.className = className;
@@ -295,8 +273,6 @@ const checkClassOverridden = (
     document.body.appendChild(testEl);
     const expected = getComputedStyle(testEl).backgroundColor;
     document.body.removeChild(testEl);
-    
-    // Verifica elementos reais no DOM
     elements.forEach((el) => {
       const actual = getComputedStyle(el).backgroundColor;
       if (actual && expected && actual !== expected && actual !== 'rgba(0, 0, 0, 0)') {
@@ -388,15 +364,11 @@ const auditDesignSystem = (): AuditResult => {
         });
       }
     } catch (error) {
-      // Ignora erros em classes individuais para não quebrar toda a auditoria
       console.warn(`Erro ao verificar classe ${className}:`, error);
     }
   });
-  
   const passedChecks =
     allClasses.length - missingClasses.length - overriddenClasses.length;
-  
-  // Log resultados
   if (missingClasses.length > 0) {
     console.group('❌ Classes não encontradas no CSS');
     missingClasses.forEach(({ className }) => {
@@ -468,7 +440,6 @@ export const runDesignSystemAudit = () => {
     return;
   }
   
-  // Aguarda o DOM estar completamente renderizado
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(auditDesignSystem, 1000);

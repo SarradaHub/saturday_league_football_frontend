@@ -73,7 +73,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, []);
 
-  // Verificar autenticação ao carregar
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);

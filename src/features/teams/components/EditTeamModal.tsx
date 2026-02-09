@@ -47,7 +47,6 @@ const EditTeamModal = ({
       await onUpdate(team.id, { name: formData.name.trim() });
       handleClose();
     } catch (submitError) {
-      // Error is handled by the mutation in the parent component
       console.error("Error updating team:", submitError);
     }
   };

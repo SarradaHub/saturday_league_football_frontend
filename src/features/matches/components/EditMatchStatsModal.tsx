@@ -39,20 +39,15 @@ const EditMatchStatsModal = ({
   const [statsLoaded, setStatsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Get players from both teams
   const team1Players = useMemo(() => match?.team_1_players ?? [], [match?.team_1_players]);
   const team2Players = useMemo(() => match?.team_2_players ?? [], [match?.team_2_players]);
   const team1Id = match?.team_1?.id;
   const team2Id = match?.team_2?.id;
 
-  // Initialize form data for all players - only compute when stats are loaded
   const initialFormData = useMemo(() => {
     const data: Record<string, PlayerStatFormData> = {};
-    
-    // Ensure existingStats is always an array
     const statsArray = Array.isArray(existingStats) ? existingStats : [];
 
-    // Team 1 players
     team1Players.forEach((player) => {
       const existingStat = statsArray.find(
         (stat) => stat.player_id === player.id && stat.team_id === team1Id
@@ -67,7 +62,6 @@ const EditMatchStatsModal = ({
       };
     });
 
-    // Team 2 players
     team2Players.forEach((player) => {
       const existingStat = statsArray.find(
         (stat) => stat.player_id === player.id && stat.team_id === team2Id
@@ -92,17 +86,15 @@ const EditMatchStatsModal = ({
     resetForm,
   } = useModalForm(initialFormData);
 
-  // Load existing stats when modal opens
   useEffect(() => {
     if (isOpen && match?.id) {
       setIsLoadingStats(true);
       setStatsLoaded(false);
       setError(null);
-      setExistingStats([]); // Reset stats when modal opens
+      setExistingStats([]);
       playerStatsRepository
         .findByMatchId(match.id)
         .then((stats) => {
-          // Ensure stats is always an array
           const statsArray = Array.isArray(stats) ? stats : [];
           setExistingStats(statsArray);
           setStatsLoaded(true);
@@ -110,23 +102,20 @@ const EditMatchStatsModal = ({
         .catch((err) => {
           setError(err instanceof Error ? err.message : "Erro ao carregar estatísticas");
           setExistingStats([]);
-          setStatsLoaded(true); // Mark as loaded even on error so form can be shown
+          setStatsLoaded(true);
         })
         .finally(() => {
           setIsLoadingStats(false);
         });
     } else if (!isOpen) {
-      // Reset when modal closes
       setExistingStats([]);
       setStatsLoaded(false);
     }
   }, [isOpen, match?.id]);
 
-  // Update form data when existing stats are loaded or change
   useEffect(() => {
-    if (!statsLoaded) return; // Don't update form until stats are loaded
-    
-    // Ensure existingStats is always an array
+    if (!statsLoaded) return;
+
     const statsArray = Array.isArray(existingStats) ? existingStats : [];
     
     if (team1Players.length > 0 || team2Players.length > 0) {
@@ -178,7 +167,6 @@ const EditMatchStatsModal = ({
 
     setError(null);
 
-    // Convert form data to payload
     const playerStats = Object.values(formData as Record<string, PlayerStatFormData>).map(
       (stat) => ({
         player_id: stat.player_id,
@@ -189,6 +177,25 @@ const EditMatchStatsModal = ({
         was_goalkeeper: stat.was_goalkeeper,
       })
     );
+
+    // Validate goalkeeper rules: player cannot be both goalkeeper and line player in same match
+    const playerStatsByPlayer = playerStats.reduce((acc, stat) => {
+      if (!acc[stat.player_id]) {
+        acc[stat.player_id] = [];
+      }
+      acc[stat.player_id].push(stat);
+      return acc;
+    }, {} as Record<number, typeof playerStats>);
+
+    for (const stats of Object.values(playerStatsByPlayer)) {
+      const hasGoalkeeper = stats.some((s) => s.was_goalkeeper === true);
+      const hasLinePlayer = stats.some((s) => s.was_goalkeeper === false);
+
+      if (hasGoalkeeper && hasLinePlayer) {
+        setError("Goleiro não pode ser jogador de linha na mesma partida");
+        return;
+      }
+    }
 
     try {
       await onSave(playerStats);
@@ -210,6 +217,15 @@ const EditMatchStatsModal = ({
 
     if (!stat) return null;
 
+    // Check if player has line player stats in other team in same match
+    const allPlayerStats = Object.values(formData as Record<string, PlayerStatFormData>).filter(
+      (s) => s.player_id === player.id
+    );
+    const hasLinePlayerStats = allPlayerStats.some(
+      (s) => s.player_id === player.id && s.team_id !== teamId && s.was_goalkeeper === false
+    );
+    const isGoalkeeperDisabled = hasLinePlayerStats && !stat.was_goalkeeper;
+
     return (
       <Card
         key={key}
@@ -218,7 +234,7 @@ const EditMatchStatsModal = ({
         style={{ marginBottom: "1rem" }}
       >
         <div style={{ marginBottom: "0.75rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h4 style={{ fontWeight: 600, color: "#171717" }}>{player.name}</h4>
+          <h4 style={{ fontWeight: 600, color: "#171717" }}>{player.display_name}</h4>
           <span style={{ fontSize: "0.875rem", color: "#737373" }}>{teamName}</span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem" }}>
@@ -268,13 +284,20 @@ const EditMatchStatsModal = ({
             <input
               type="checkbox"
               checked={stat.was_goalkeeper}
+              disabled={isGoalkeeperDisabled}
               onChange={(e) => {
                 const newData = { ...formData };
                 (newData[key] as PlayerStatFormData).was_goalkeeper = e.target.checked;
                 setFormData(newData);
               }}
-              style={{ height: "1rem", width: "1rem", borderRadius: "0.25rem" }}
+              style={{ height: "1rem", width: "1rem", borderRadius: "0.25rem", opacity: isGoalkeeperDisabled ? 0.5 : 1 }}
+              title={isGoalkeeperDisabled ? "Jogador já está marcado como jogador de linha em outro time nesta partida" : ""}
             />
+            {isGoalkeeperDisabled && (
+              <p style={{ fontSize: "0.75rem", color: "#dc2626", marginTop: "0.25rem" }}>
+                Jogador já está como jogador de linha em outro time
+              </p>
+            )}
           </div>
         </div>
       </Card>

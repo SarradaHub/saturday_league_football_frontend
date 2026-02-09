@@ -2,7 +2,6 @@ import { useState, FormEvent, ChangeEvent } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { LoginCredentials } from "../types";
 import { Input, Button, Alert } from "@platform/design-system";
-import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -38,7 +37,6 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials((prev) => ({ ...prev, [name]: value }));
-    // Limpar erro do campo quando usuário começar a digitar
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }

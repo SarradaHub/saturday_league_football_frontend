@@ -56,9 +56,17 @@ class MatchRepository extends BaseService<
   }
 
   updateMatch(id: number, data: UpsertMatchPayload) {
-    // Transform winning_team object to winning_team_id for backend compatibility
-    const payload: any = { ...data };
-    if (payload.winning_team && typeof payload.winning_team === 'object' && 'id' in payload.winning_team) {
+    type PayloadWithWinningTeam = UpsertMatchPayload & {
+      winning_team?: { id: number } | null;
+      winning_team_id?: number | null;
+    };
+
+    const payload: PayloadWithWinningTeam = { ...data };
+    if (
+      payload.winning_team &&
+      typeof payload.winning_team === "object" &&
+      "id" in payload.winning_team
+    ) {
       payload.winning_team_id = payload.winning_team.id;
       delete payload.winning_team;
     } else if (payload.winning_team === null) {
@@ -76,6 +84,26 @@ class MatchRepository extends BaseService<
     return this.executeRequest<Match>("POST", `/${id}/finalize`).then(
       (response) => this.handleResponse(response),
     );
+  }
+
+  substitutePlayer(
+    matchId: number,
+    playerId: number,
+    replacementPlayerId: number,
+    teamId: number
+  ) {
+    return this.executeRequest<{
+      removed_player_id: number;
+      removed_player_name: string;
+      replacement_player_id: number;
+      replacement_player_name: string;
+      team_id: number;
+      team_name: string;
+    }>("POST", `/${matchId}/substitute_player`, {
+      player_id: playerId,
+      replacement_player_id: replacementPlayerId,
+      team_id: teamId,
+    }).then((response) => this.handleResponse(response));
   }
 }
 

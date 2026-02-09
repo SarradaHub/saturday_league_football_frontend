@@ -95,6 +95,47 @@ class RoundRepository extends BaseService<
   deleteRound(id: number) {
     return super.delete(id);
   }
+
+  substitutePlayer(roundId: number, playerId: number, matchId?: number) {
+    const payload = matchId ? { player_id: playerId, match_id: matchId } : { player_id: playerId };
+    return this.executeRequest<{
+      removed_player_id: number;
+      replacement_player_id: number;
+      replacement_player_name: string;
+    }>("POST", `/${roundId}/substitute_player`, payload).then((response) => this.handleResponse(response));
+  }
+
+  rebalanceTeams(roundId: number) {
+    return this.executeRequest<{
+      message: string;
+      teams_before: number;
+      teams_after: number;
+      players_before: number;
+      players_after: number;
+      distribution: Array<{
+        id: number;
+        name: string;
+        players_count: number;
+      }>;
+    }>("POST", `/${roundId}/rebalance_teams`).then((response) => this.handleResponse(response));
+  }
+
+  removePlayer(roundId: number, playerId: number) {
+    return this.executeRequest<void>(
+      "DELETE",
+      `/${roundId}/remove_player`,
+      undefined,
+      { player_id: playerId },
+    ).then((response) => this.handleResponse(response));
+  }
+
+  togglePlayerBlock(roundId: number, playerId: number) {
+    return this.executeRequest<{ player_round_id: number; blocked: boolean }>(
+      "POST",
+      `/${roundId}/toggle_player_block`,
+      { player_id: playerId },
+    ).then((response) => this.handleResponse(response));
+  }
 }
 
 const roundRepository = new RoundRepository();

@@ -26,7 +26,10 @@ export interface Round {
 
 export interface Player {
   id: number;
-  name: string;
+  display_name: string;
+  first_name?: string;
+  last_name?: string;
+  nickname?: string;
   position?: string;
   championship_id?: number;
   created_at: string;
@@ -36,6 +39,12 @@ export interface Player {
   total_own_goals: number;
   rounds?: Round[];
   player_stats?: PlayerStat[];
+  /** Set when player is listed in a round (from RoundPresenter) */
+  player_round_id?: number;
+  /** Set when player is listed in a team (from TeamPresenter); used to remove player from team. */
+  player_team_id?: number;
+  blocked?: boolean;
+  goalkeeper_only?: boolean;
 }
 
 export interface PlayerStat {
@@ -84,4 +93,6 @@ export interface Team {
   matches?: Match[];
   players?: Player[];
   player_count?: number;
+  /** When true, team is excluded from the next-match queue (e.g. after losing). */
+  is_blocked?: boolean;
 }

@@ -5,6 +5,7 @@ interface SelectMatchWinnerModalProps {
   isOpen: boolean;
   candidates: Team[];
   nextOpponent?: Team;
+  reason?: string;
   isSubmitting?: boolean;
   onClose: () => void;
   onSelect: (winnerTeamId: number) => void;
@@ -14,11 +15,13 @@ const SelectMatchWinnerModal = ({
   isOpen,
   candidates,
   nextOpponent,
+  reason,
   isSubmitting = false,
   onClose,
   onSelect,
 }: SelectMatchWinnerModalProps) => {
   const validCandidates = candidates.length === 2;
+  const isPenaltyShootout = reason === "first_match_draw_one_next_team";
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Escolher Vencedor">
@@ -27,6 +30,11 @@ const SelectMatchWinnerModal = ({
           A primeira partida terminou empatada e há apenas um time completo
           aguardando. Escolha o vencedor para seguir a sequência automática.
         </p>
+        {isPenaltyShootout && (
+          <p style={{ color: "#171717", margin: 0, fontWeight: 500 }}>
+            A decisão será por disputa de pênaltis: selecione o time vencedor da cobrança.
+          </p>
+        )}
         {nextOpponent && (
           <div style={{ color: "#111827", fontWeight: 500 }}>
             Próximo adversário: {nextOpponent.name}

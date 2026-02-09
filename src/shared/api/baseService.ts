@@ -6,9 +6,6 @@ export class ApiConfigAdapter {
   private readonly baseURL: string;
 
   private constructor() {
-    // Use relative URL in development to leverage Vite proxy
-    // If VITE_BASE_URL is set to http://localhost (without port), use empty string for proxy
-    // Otherwise use the provided base URL
     const envBaseURL = import.meta.env.VITE_BASE_URL;
     if (envBaseURL === "http://localhost" || !envBaseURL) {
       this.baseURL = "";
@@ -145,7 +142,6 @@ export abstract class BaseService<
   }
 
   private setupInterceptors(): void {
-    // Request interceptor: adicionar token Bearer
     this.api.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         const token = tokenStorage.getToken();
@@ -159,15 +155,11 @@ export abstract class BaseService<
       },
     );
 
-    // Response interceptor: tratar erros 401
     this.api.interceptors.response.use(
       (response) => response,
       (error) => {
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          // Token inválido ou expirado
           tokenStorage.removeToken();
-          
-          // Redirecionar para login apenas se não estiver já na página de login
           if (window.location.pathname !== "/login") {
             window.location.href = "/login";
           }
@@ -206,7 +198,6 @@ export abstract class BaseService<
         TEntity[] | PaginatedResponse<TEntity>
       >("GET", "/", undefined, params);
       const data = this.handleResponse(response);
-      // Check if response is paginated
       if (data && typeof data === "object" && "data" in data) {
         return (data as PaginatedResponse<TEntity>).data;
       }

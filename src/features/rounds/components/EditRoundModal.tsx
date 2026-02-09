@@ -1,30 +1,29 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Modal, Button, Alert, Label } from "@platform/design-system";
+import { Modal, Button, Alert } from "@platform/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
+import { Round } from "@/types";
 
-interface CreateRoundFormData {
-  name: string;
-  round_date: string;
-  championship_id: number;
-  [key: string]: string | number;
-}
-
-interface CreateRoundModalProps {
+interface EditRoundModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (formData: CreateRoundFormData) => Promise<void>;
-  initialChampionshipId?: number;
+  onUpdate: (id: number, data: { name: string; round_date: string }) => Promise<void>;
+  round: Round | null;
 }
 
-const CreateRoundModal = ({
+interface RoundFormState {
+  name: string;
+  round_date: string;
+}
+
+const EditRoundModal = ({
   isOpen,
   onClose,
-  onCreate,
-  initialChampionshipId = 0,
-}: CreateRoundModalProps) => {
+  onUpdate,
+  round,
+}: EditRoundModalProps) => {
   const {
     formData,
     setFormData,
@@ -33,22 +32,26 @@ const CreateRoundModal = ({
     error,
     isSubmitting,
     resetForm,
-  } = useModalForm<CreateRoundFormData>({
+  } = useModalForm<RoundFormState>({
     name: "",
     round_date: "",
-    championship_id: initialChampionshipId,
   });
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   useEffect(() => {
-    if (initialChampionshipId) {
-      setFormData((prev) => ({
-        ...prev,
-        championship_id: initialChampionshipId,
-      }));
+    if (isOpen && round) {
+      const roundDate = round.round_date ? new Date(round.round_date) : null;
+      setFormData({
+        name: round.name || "",
+        round_date: round.round_date || "",
+      });
+      setSelectedDate(roundDate);
+    } else if (!isOpen) {
+      resetForm();
+      setSelectedDate(null);
     }
-  }, [initialChampionshipId, setFormData]);
+  }, [isOpen, round, setFormData, resetForm]);
 
   const minDate = useMemo(() => new Date(), []);
 
@@ -66,16 +69,18 @@ const CreateRoundModal = ({
     onClose();
   };
 
+  if (!round) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Criar Nova Rodada">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Editar Rodada">
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <form
-          id="round-form"
+          id="edit-round-form"
           onSubmit={(event) =>
             handleSubmit(async (payload) => {
-              await onCreate({
-                ...payload,
-                championship_id: Number(payload.championship_id),
+              await onUpdate(round.id, {
+                name: payload.name,
+                round_date: payload.round_date,
               });
             }, event)
           }
@@ -89,42 +94,38 @@ const CreateRoundModal = ({
             required
           />
           <div style={{ marginBottom: "1.5rem" }}>
-            <Label htmlFor="round-date-picker" style={{ marginBottom: "0.5rem", display: "block" }}>
+            <label htmlFor="round-date-picker" style={{ marginBottom: "0.5rem", display: "block", fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}>
               Data da Rodada *
-            </Label>
+            </label>
             <DatePicker
               id="round-date-picker"
               selected={selectedDate}
               onChange={handleDateChange}
               minDate={minDate}
               dateFormat="dd/MM/yyyy"
-              placeholderText="Selecione uma data"
-              style={{ width: "100%", borderRadius: "0.5rem", border: "1px solid #d4d4d4", padding: "0.75rem 1rem", outline: "none" }}
               required
-              popperClassName="react-datepicker-popper"
+              style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
             />
           </div>
           {error && <Alert variant="error">{error}</Alert>}
         </form>
-        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+        <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
           <Button
             type="button"
             variant="secondary"
             onClick={handleClose}
             disabled={isSubmitting}
-            aria-label="Cancelar"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             variant="primary"
-            form="round-form"
+            form="edit-round-form"
             loading={isSubmitting}
-            disabled={!formData.name || !formData.round_date}
-            aria-label="Criar Rodada"
+            disabled={isSubmitting}
           >
-            Criar Rodada
+            Salvar Alterações
           </Button>
         </div>
       </div>
@@ -132,4 +133,4 @@ const CreateRoundModal = ({
   );
 };
 
-export default CreateRoundModal;
+export default EditRoundModal;

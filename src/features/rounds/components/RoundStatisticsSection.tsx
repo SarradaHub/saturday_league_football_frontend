@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaTrophy, FaMedal, FaShieldAlt } from "react-icons/fa";
-import { Card, CardHeader, CardTitle, CardContent, Alert, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@platform/design-system";
+import { Card, CardContent, Alert, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@platform/design-system";
 import roundRepository from "@/features/rounds/api/roundRepository";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 
@@ -11,6 +11,7 @@ interface PlayerStatistics {
   player: {
     id: number;
     name: string;
+    display_name?: string;
   };
   goals: number;
   assists: number;
@@ -23,7 +24,7 @@ interface PlayerStatistics {
 }
 
 interface RoundStatisticsData {
-  [playerId: number]: PlayerStatistics;
+  [playerId: string]: PlayerStatistics;
 }
 
 interface RoundStatisticsSectionProps {
@@ -57,8 +58,8 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
       let bValue: number | string;
 
       if (sortField === "player") {
-        aValue = a.player.name.toLowerCase();
-        bValue = b.player.name.toLowerCase();
+        aValue = (a.player.name ?? a.player.display_name ?? "").toLowerCase();
+        bValue = (b.player.name ?? b.player.display_name ?? "").toLowerCase();
       } else {
         aValue = a[sortField];
         bValue = b[sortField];
@@ -130,7 +131,6 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-      {/* Summary Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1rem" }}>
         {topScorer && topScorer.goals > 0 && (
           <motion.div
@@ -144,7 +144,7 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
                   <div>
                     <p style={{ fontSize: "0.875rem", fontWeight: 500, color: "#92400e" }}>Artilheiro</p>
                     <p style={{ fontSize: "1.125rem", fontWeight: 700, color: "#78350f" }}>
-                      {topScorer.player.name}
+                      {topScorer.player.name ?? topScorer.player.display_name}
                     </p>
                     <p style={{ fontSize: "0.875rem", color: "#d97706" }}>{topScorer.goals} gols</p>
                   </div>
@@ -167,7 +167,7 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
                   <div>
                     <p style={{ fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}>Mais Assists</p>
                     <p style={{ fontSize: "1.125rem", fontWeight: 700, color: "#171717" }}>
-                      {topAssist.player.name}
+                      {topAssist.player.name ?? topAssist.player.display_name}
                     </p>
                     <p style={{ fontSize: "0.875rem", color: "#737373" }}>{topAssist.assists} assists</p>
                   </div>
@@ -190,7 +190,7 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
                   <div>
                     <p style={{ fontSize: "0.875rem", fontWeight: 500, color: "#6d28d9" }}>Mais Goleiro</p>
                     <p style={{ fontSize: "1.125rem", fontWeight: 700, color: "#5b21b6" }}>
-                      {topGoalkeeper.player.name}
+                      {topGoalkeeper.player.name ?? topGoalkeeper.player.display_name}
                     </p>
                     <p style={{ fontSize: "0.875rem", color: "#7c3aed" }}>
                       {topGoalkeeper.goalkeeper_count} vez{topGoalkeeper.goalkeeper_count > 1 ? "es" : ""}
@@ -203,7 +203,6 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
         )}
       </div>
 
-      {/* Statistics Table */}
       <Card variant="outlined" padding="none">
         <Table>
           <TableHeader>
@@ -283,7 +282,7 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
             </TableRow>
           </TableHeader>
           <TableBody hoverable>
-            {sortedStatistics.map((stat, index) => (
+            {sortedStatistics.map((stat) => (
               <TableRow
                 key={stat.player.id}
                 hoverable
@@ -291,7 +290,7 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
                 onClick={() => navigate(`/players/${stat.player.id}`)}
               >
                 <TableCell style={{ fontWeight: 500 }}>
-                  {stat.player.name}
+                  {stat.player.name ?? stat.player.display_name}
                 </TableCell>
                 <TableCell style={{ textAlign: "center" }}>
                   {stat.goals}
@@ -323,4 +322,4 @@ const RoundStatisticsSection = ({ roundId }: RoundStatisticsSectionProps) => {
   );
 };
 
-export default RoundStatisticsSection;
+export default memo(RoundStatisticsSection);

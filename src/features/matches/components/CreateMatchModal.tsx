@@ -47,11 +47,10 @@ const CreateMatchModal = ({
   });
 
   useEffect(() => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       round_id: roundId,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }));
   }, [roundId, setFormData]);
 
   const handleClose = () => {

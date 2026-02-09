@@ -40,7 +40,7 @@ const DeletePlayerModal = ({
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <p style={{ color: "#404040" }}>
           Tem certeza que deseja excluir o jogador{" "}
-          <span style={{ fontWeight: 600 }}>{player.name}</span>?
+          <span style={{ fontWeight: 600 }}>{player.display_name}</span>?
         </p>
         <Alert variant="warning">
           <strong>Atenção:</strong> Esta ação não pode ser desfeita. Todas as

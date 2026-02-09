@@ -23,6 +23,7 @@ import {
   FaUsers,
   FaEdit,
   FaTrash,
+  FaUserMinus,
 } from "react-icons/fa";
 import teamRepository from "@/features/teams/api/teamRepository";
 import playerRepository from "@/features/players/api/playerRepository";
@@ -124,13 +125,32 @@ const TeamDetailsPage = () => {
       }),
   });
 
+  const removePlayerMutation = useMutation({
+    mutationFn: ({ playerTeamId }: { playerTeamId: number }) =>
+      teamRepository.updateTeam(teamId, {
+        player_teams_attributes: [{ id: playerTeamId, _destroy: true }],
+      }),
+    onSuccess: () => {
+      setToast({ open: true, message: "Jogador removido do time." });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team(teamId) });
+    },
+    onError: (mutationError) =>
+      setToast({
+        open: true,
+        message:
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao remover jogador do time.",
+      }),
+  });
+
   const players = useMemo(() => team?.players ?? [], [team?.players]);
 
   const filteredPlayers = useMemo(() => {
     const normalized = searchTerm.trim().toLowerCase();
     if (!normalized) return players;
     return players.filter((player) =>
-      player.name.toLowerCase().includes(normalized),
+      player.display_name.toLowerCase().includes(normalized),
     );
   }, [players, searchTerm]);
 
@@ -174,7 +194,7 @@ const TeamDetailsPage = () => {
       const goals = statsList.reduce((acc, stat) => acc + stat.goals, 0);
       const assists = statsList.reduce((acc, stat) => acc + stat.assists, 0);
       return {
-        name: player.name.split(" ")[0],
+        name: player.first_name ?? player.display_name.split(" ")[0],
         goals,
         assists,
       };
@@ -352,19 +372,40 @@ const TeamDetailsPage = () => {
                         onClick={() => navigate(`/players/${player.id}`)}
                       >
                         <CardContent>
-                          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                            <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.125rem", fontWeight: 700, color: "#2563eb" }}>
-                              {player.name.charAt(0).toUpperCase()}
-                            </span>
-                            <div>
-                              <h3 style={{ fontWeight: 600, color: "#171717" }}>
-                                {player.name}
-                              </h3>
-                              <p style={{ fontSize: "0.875rem", color: "#737373" }}>
-                                Gols: {player.total_goals} • Assistências:{" "}
-                                {player.total_assists}
-                              </p>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                              <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.125rem", fontWeight: 700, color: "#2563eb" }}>
+                                {player.display_name.charAt(0).toUpperCase()}
+                              </span>
+                              <div style={{ flex: 1 }}>
+                                <h3 style={{ fontWeight: 600, color: "#171717" }}>
+                                  {player.display_name}
+                                </h3>
+                                <p style={{ fontSize: "0.875rem", color: "#737373" }}>
+                                  Gols: {player.total_goals} • Assistências:{" "}
+                                  {player.total_assists}
+                                </p>
+                              </div>
                             </div>
+                            {typeof player.player_team_id === "number" && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                aria-label="Remover jogador do time"
+                                leftIcon={FaUserMinus}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const ptId = player.player_team_id;
+                                if (typeof ptId === "number" && window.confirm(`Remover ${player.display_name} do time?`)) {
+                                  removePlayerMutation.mutate({ playerTeamId: ptId });
+                                }
+                                }}
+                                disabled={removePlayerMutation.isPending}
+                              >
+                                Remover do time
+                              </Button>
+                            )}
                           </div>
                         </CardContent>
                       </Card>

@@ -24,7 +24,6 @@ const withTestElement = (
 ) => {
   const sample = document.createElement("div");
   sample.className = className;
-  // Só aplica estilos inline se não for para verificar position ou inset
   if (!skipInlineStyles) {
     sample.style.position = "absolute";
     sample.style.left = "-9999px";
@@ -51,7 +50,7 @@ const buildChecks = (): HealthCheckResult[] => {
 
   const fixedPosition = withTestElement("fixed", (el) => {
     return getComputedStyle(el).position;
-  }, true); // Não aplica estilos inline para não interferir no position
+  }, true);
   checks.push({
     name: "fixed",
     ok: fixedPosition === "fixed",
@@ -62,7 +61,7 @@ const buildChecks = (): HealthCheckResult[] => {
   const inset = withTestElement("inset-0", (el) => {
     const styles = getComputedStyle(el);
     return `${styles.top} ${styles.right} ${styles.bottom} ${styles.left}`;
-  }, true); // Não aplica estilos inline para não interferir no inset
+  }, true);
   checks.push({
     name: "inset-0",
     ok: inset === "0px 0px 0px 0px",
@@ -110,16 +109,12 @@ const buildChecks = (): HealthCheckResult[] => {
     actual: shadow || "(missing)",
   });
 
-  // Para w-full, precisa estar no fluxo normal (não absolute)
   const widthSample = document.createElement("div");
   widthSample.className = "w-full";
   widthSample.style.visibility = "hidden";
   document.body.appendChild(widthSample);
   const width = getComputedStyle(widthSample).width;
   document.body.removeChild(widthSample);
-  
-  // w-full computado será em px quando o elemento está no body
-  // Verifica se é aproximadamente a largura do viewport (com margem de erro de 20px)
   const viewportWidth = window.innerWidth;
   const widthPx = width ? parseFloat(width.replace("px", "")) : 0;
   const isFullWidth = width === "100%" || 
@@ -144,8 +139,6 @@ const buildChecks = (): HealthCheckResult[] => {
   const maxHeight = withTestElement("max-h-[90vh]", (el) => {
     return getComputedStyle(el).maxHeight;
   });
-  // max-h-[90vh] computado será em px
-  // Verifica se é aproximadamente 90% da altura do viewport (com margem de erro de 20px)
   const viewportHeight = window.innerHeight;
   const expectedMaxHeight = viewportHeight * 0.9;
   const maxHeightPx = maxHeight ? parseInt(maxHeight) : 0;

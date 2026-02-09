@@ -60,9 +60,10 @@ class PlayerRepository extends BaseService<
     return super.delete(id);
   }
 
-  addToRound(id: number, roundId: number) {
+  addToRound(id: number, roundId: number, goalkeeperOnly?: boolean) {
     return this.executeRequest<Player>("POST", `/${id}/add_to_round`, {
       round_id: roundId,
+      ...(typeof goalkeeperOnly === "boolean" && { goalkeeper_only: goalkeeperOnly }),
     }).then((response) => this.handleResponse(response));
   }
 

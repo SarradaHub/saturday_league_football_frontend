@@ -83,7 +83,6 @@ const AppRoutes = () => (
           </ProtectedRoute>
         }
       />
-      {/* Catch-all route: redireciona qualquer rota não encontrada para HomePage */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </Suspense>

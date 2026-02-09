@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FaChartLine } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 import { FaArrowLeft, FaEdit, FaPlus, FaTrash } from "react-icons/fa";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import championshipRepository from "@/features/championships/api/championshipRepository";
 import roundRepository from "@/features/rounds/api/roundRepository";
 import CreateRoundModal from "@/features/rounds/components/CreateRoundModal";
@@ -112,6 +113,19 @@ const ChampionshipDetailsPage = () => {
 
   const rounds = useMemo(() => championship?.rounds ?? [], [championship]);
   const players = useMemo(() => championship?.players ?? [], [championship]);
+
+  const { data: championshipStats } = useQuery({
+    queryKey: ["championship", championshipId, "statistics"],
+    queryFn: () => championshipRepository.getStatistics(championshipId),
+    enabled: Number.isFinite(championshipId) && !!championship,
+  });
+
+  const statsList = useMemo(() => {
+    if (!championshipStats || typeof championshipStats !== "object") return [];
+    return Object.entries(championshipStats)
+      .map(([playerId, stat]) => ({ playerId: Number(playerId), ...stat }))
+      .sort((a, b) => (b.goals ?? 0) - (a.goals ?? 0));
+  }, [championshipStats]);
 
   const handleCloseToast = (
     _event: Event | React.SyntheticEvent,
@@ -265,7 +279,7 @@ const ChampionshipDetailsPage = () => {
                         </CardHeader>
                         <CardContent>
                           <p style={{ marginTop: "0.5rem", fontSize: "0.875rem", color: "#737373" }}>
-                            {format(new Date(round.round_date), "dd/MM/yyyy")}
+                            {format(parse(round.round_date, "yyyy-MM-dd", new Date()), "dd/MM/yyyy")}
                           </p>
                         </CardContent>
                       </Card>
@@ -300,11 +314,11 @@ const ChampionshipDetailsPage = () => {
                         <CardContent>
                           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                             <span style={{ display: "flex", height: "2.5rem", width: "2.5rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", color: "#2563eb", fontWeight: 600 }}>
-                              {player.name.charAt(0).toUpperCase()}
+                              {player.display_name.charAt(0).toUpperCase()}
                             </span>
                             <div style={{ display: "flex", flexDirection: "column" }}>
                               <span style={{ fontWeight: 500, color: "#171717" }}>
-                                {player.name}
+                                {player.display_name}
                               </span>
                               <span style={{ fontSize: "0.75rem", color: "#737373" }}>
                                 Participou de {player.rounds?.length ?? 0} rodadas
@@ -319,6 +333,63 @@ const ChampionshipDetailsPage = () => {
               ) : (
                 <p style={{ marginTop: "1rem", color: "#737373" }}>
                   Nenhum jogador cadastrado nesta pelada.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <CardHeader>
+              <CardTitle style={{ fontSize: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <FaChartLine style={{ color: "#2563eb" }} aria-hidden />
+                Estatísticas do campeonato
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {statsList.length > 0 ? (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid #e5e5e5", textAlign: "left" }}>
+                        <th style={{ padding: "0.75rem", fontWeight: 600, color: "#171717" }}>Jogador</th>
+                        <th style={{ padding: "0.75rem", fontWeight: 600, color: "#171717" }}>Partidas</th>
+                        <th style={{ padding: "0.75rem", fontWeight: 600, color: "#171717" }}>Gols</th>
+                        <th style={{ padding: "0.75rem", fontWeight: 600, color: "#171717" }}>Assist.</th>
+                        <th style={{ padding: "0.75rem", fontWeight: 600, color: "#171717" }}>Gols contra</th>
+                        <th style={{ padding: "0.75rem", fontWeight: 600, color: "#171717" }}>Vitórias</th>
+                        <th style={{ padding: "0.75rem", fontWeight: 600, color: "#171717" }}>Empates</th>
+                        <th style={{ padding: "0.75rem", fontWeight: 600, color: "#171717" }}>Derrotas</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {statsList.map(({ playerId, player, goals, assists, own_goals, matches, wins, draws, losses }) => (
+                        <tr key={playerId} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                          <td style={{ padding: "0.75rem" }}>
+                            <span
+                              style={{ cursor: "pointer", color: "#2563eb", fontWeight: 500 }}
+                              onClick={() => navigate(`/players/${player?.id}`)}
+                              onKeyDown={(e) => e.key === "Enter" && navigate(`/players/${player?.id}`)}
+                              role="button"
+                              tabIndex={0}
+                            >
+                              {player?.display_name ?? "—"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "0.75rem", color: "#737373" }}>{matches ?? 0}</td>
+                          <td style={{ padding: "0.75rem", color: "#737373" }}>{goals ?? 0}</td>
+                          <td style={{ padding: "0.75rem", color: "#737373" }}>{assists ?? 0}</td>
+                          <td style={{ padding: "0.75rem", color: "#737373" }}>{own_goals ?? 0}</td>
+                          <td style={{ padding: "0.75rem", color: "#737373" }}>{wins ?? 0}</td>
+                          <td style={{ padding: "0.75rem", color: "#737373" }}>{draws ?? 0}</td>
+                          <td style={{ padding: "0.75rem", color: "#737373" }}>{losses ?? 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p style={{ color: "#737373", marginTop: "1rem" }}>
+                  Nenhuma estatística disponível ainda. Jogue partidas nas rodadas para ver os números.
                 </p>
               )}
             </CardContent>

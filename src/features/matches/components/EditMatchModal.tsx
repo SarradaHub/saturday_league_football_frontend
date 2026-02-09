@@ -83,7 +83,6 @@ const EditMatchModal = ({
       });
       handleClose();
     } catch (submitError) {
-      // Error is handled by the mutation in the parent component
       console.error("Error updating match:", submitError);
     }
   };

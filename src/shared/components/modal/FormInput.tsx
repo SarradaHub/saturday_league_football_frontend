@@ -54,7 +54,6 @@ const FormInput = ({
     }
 
     if (type === "select") {
-      // Convert options format from { id, name } to { value, label }
       const selectOptions = [
         { value: "", label: placeholder },
         ...options.map((option) => ({

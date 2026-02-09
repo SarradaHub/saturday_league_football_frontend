@@ -9,13 +9,11 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Se já estiver autenticado, redirecionar para campeonatos
     if (!isLoading && isAuthenticated) {
       navigate("/championships", { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Mostrar loading enquanto verifica autenticação
   if (isLoading) {
     return (
       <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
@@ -26,13 +24,11 @@ const LoginPage = () => {
     );
   }
 
-  // Se já estiver autenticado, não mostrar formulário
   if (isAuthenticated) {
     return null;
   }
 
   const handleLoginSuccess = () => {
-    // Redirecionar para a página que o usuário tentou acessar ou campeonatos
     const from = new URLSearchParams(window.location.search).get("from") || "/championships";
     navigate(from, { replace: true });
   };

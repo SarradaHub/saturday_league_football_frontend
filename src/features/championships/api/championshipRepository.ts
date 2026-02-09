@@ -48,6 +48,22 @@ class ChampionshipRepository extends BaseService<
   deleteChampionship(id: number) {
     return super.delete(id);
   }
+
+  getStatistics(championshipId: number) {
+    return this.executeRequest<{
+      [playerId: number]: {
+        player: { id: number; display_name: string };
+        goals: number;
+        assists: number;
+        own_goals: number;
+        matches: number;
+        goalkeeper_count: number;
+        wins: number;
+        losses: number;
+        draws: number;
+      };
+    }>("GET", `/${championshipId}/statistics`).then((response) => this.handleResponse(response));
+  }
 }
 
 const championshipRepository = new ChampionshipRepository();

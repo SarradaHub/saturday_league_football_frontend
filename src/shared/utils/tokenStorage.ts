@@ -46,9 +46,6 @@ export const tokenStorage = {
   isValidToken: (): boolean => {
     const token = tokenStorage.getToken();
     if (!token) return false;
-    
-    // Basic validation - check if token is not empty and has reasonable length
-    // In production, you might want to decode and check expiration
     return token.length > 10;
   },
 };

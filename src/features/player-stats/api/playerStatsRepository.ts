@@ -1,5 +1,5 @@
 import { BaseService, QueryParams } from "@/shared/api/baseService";
-import { PlayerStat } from "@/types";
+import type { PlayerStat } from "@/types";
 
 interface PlayerStatPayload
   extends Pick<
@@ -44,21 +44,24 @@ class PlayerStatsRepository extends BaseService<
   }
 
   findByMatchId(matchId: number) {
-    return this.executeRequest<{ data: PlayerStat[]; meta?: unknown } | PlayerStat[]>("GET", `/match/${matchId}`).then(
-      (response) => {
-        const result = this.handleResponse(response);
-        // Handle paginated response format: { data: [...], meta: {...} }
-        if (result && typeof result === 'object' && 'data' in result && Array.isArray(result.data)) {
-          return result.data;
-        }
-        // Handle direct array response
-        if (Array.isArray(result)) {
-          return result;
-        }
-        // Fallback to empty array
-        return [];
-      },
-    );
+    return this.executeRequest<{ data: PlayerStat[]; meta?: unknown } | PlayerStat[]>(
+      "GET",
+      `/match/${matchId}`,
+    ).then((response) => {
+      const result = this.handleResponse(response);
+      if (
+        result &&
+        typeof result === "object" &&
+        "data" in result &&
+        Array.isArray((result as { data: unknown }).data)
+      ) {
+        return (result as { data: PlayerStat[] }).data;
+      }
+      if (Array.isArray(result)) {
+        return result as PlayerStat[];
+      }
+      return [];
+    });
   }
 
   createPlayerStat(data: PlayerStatPayload) {
@@ -77,6 +80,18 @@ class PlayerStatsRepository extends BaseService<
     return this.executeRequest<PlayerStat[]>("POST", `/match/${matchId}/bulk`, {
       player_stats: playerStats,
     }).then((response) => this.handleResponse(response));
+  }
+
+  addGoalkeeper(matchId: number, teamId: number, playerId: number) {
+    return this.executeRequest<PlayerStat>(
+      "POST",
+      `/match/${matchId}/goalkeepers`,
+      {
+        match_id: matchId,
+        team_id: teamId,
+        player_id: playerId,
+      },
+    ).then((response) => this.handleResponse(response));
   }
 }
 

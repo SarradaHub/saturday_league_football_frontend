@@ -1,7 +1,14 @@
 import { BaseService, QueryParams } from "@/shared/api/baseService";
 import { Team } from "@/types";
 
-type UpsertTeamPayload = Partial<Pick<Team, "name">>;
+export interface PlayerTeamAttribute {
+  id: number;
+  _destroy?: boolean;
+}
+
+type UpsertTeamPayload = Partial<Pick<Team, "name">> & {
+  player_teams_attributes?: PlayerTeamAttribute[];
+};
 
 interface TeamQueryParams extends QueryParams {
   round_id?: number;
@@ -38,7 +45,9 @@ class TeamRepository extends BaseService<
   }
 
   updateTeam(id: number, data: UpsertTeamPayload) {
-    return super.update(id, data);
+    return this.executeRequest<Team>("PUT", `/${id}`, { team: data }).then((response) =>
+      this.handleResponse(response),
+    );
   }
 
   deleteTeam(id: number) {

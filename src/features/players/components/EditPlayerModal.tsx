@@ -4,10 +4,16 @@ import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 import { Player } from "@/types";
 
+interface EditPlayerPayload {
+  first_name?: string;
+  last_name?: string;
+  nickname?: string;
+}
+
 interface EditPlayerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpdate: (id: number, data: { name: string }) => Promise<void>;
+  onUpdate: (id: number, data: EditPlayerPayload) => Promise<void>;
   player: Player | null;
 }
 
@@ -25,12 +31,18 @@ const EditPlayerModal = ({
     isSubmitting,
     resetForm,
   } = useModalForm({
-    name: "",
+    first_name: "",
+    last_name: "",
+    nickname: "",
   });
 
   useEffect(() => {
     if (isOpen && player) {
-      setFormData({ name: player.name });
+      setFormData({
+        first_name: player.first_name ?? "",
+        last_name: player.last_name ?? "",
+        nickname: player.nickname ?? "",
+      });
     }
   }, [isOpen, player, setFormData]);
 
@@ -44,10 +56,13 @@ const EditPlayerModal = ({
     if (!player) return;
 
     try {
-      await onUpdate(player.id, { name: formData.name.trim() });
+      await onUpdate(player.id, {
+        first_name: formData.first_name?.trim() || undefined,
+        last_name: formData.last_name?.trim() || undefined,
+        nickname: formData.nickname?.trim() || undefined,
+      });
       handleClose();
     } catch (submitError) {
-      // Error is handled by the mutation in the parent component
       console.error("Error updating player:", submitError);
     }
   };
@@ -59,12 +74,25 @@ const EditPlayerModal = ({
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <form id="edit-player-form" onSubmit={handleSubmit}>
           <FormInput
-            label="Nome do Jogador"
-            name="name"
-            value={formData.name}
+            label="Nome"
+            name="first_name"
+            value={formData.first_name}
             onChange={handleChange}
-            placeholder="Ex: João Silva"
-            required
+            placeholder="Ex: João"
+          />
+          <FormInput
+            label="Sobrenome"
+            name="last_name"
+            value={formData.last_name}
+            onChange={handleChange}
+            placeholder="Ex: Silva"
+          />
+          <FormInput
+            label="Apelido"
+            name="nickname"
+            value={formData.nickname}
+            onChange={handleChange}
+            placeholder="Ex: Joãozinho"
           />
           {error && <Alert variant="error">{error}</Alert>}
         </form>
@@ -83,7 +111,7 @@ const EditPlayerModal = ({
             variant="primary"
             form="edit-player-form"
             loading={isSubmitting}
-            disabled={!formData.name.trim() || formData.name.trim() === player.name}
+            disabled={isSubmitting}
             aria-label="Salvar Alterações"
           >
             Salvar Alterações

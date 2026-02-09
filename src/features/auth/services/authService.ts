@@ -3,9 +3,6 @@ import { tokenStorage } from "@/shared/utils/tokenStorage";
 import { LoginCredentials, User, AuthMethod } from "../types";
 
 class AuthService {
-  /**
-   * Fazer login usando o método especificado
-   */
   async login(
     credentials: LoginCredentials,
     method: AuthMethod = "devise",
@@ -18,7 +15,6 @@ class AuthService {
       result = await authRepository.loginWithIdentityService(credentials);
     }
 
-    // Salvar token no storage
     if (result.token) {
       tokenStorage.saveToken(result.token, method);
     }
@@ -26,13 +22,9 @@ class AuthService {
     return result;
   }
 
-  /**
-   * Fazer logout
-   */
   async logout(): Promise<void> {
     const method = tokenStorage.getAuthMethod();
 
-    // Se for Devise, chamar endpoint de logout
     if (method === "devise") {
       try {
         await authRepository.logout();
@@ -41,13 +33,9 @@ class AuthService {
       }
     }
 
-    // Limpar token do storage
     tokenStorage.removeToken();
   }
 
-  /**
-   * Verificar se usuário está autenticado
-   */
   async checkAuth(): Promise<User | null> {
     const token = tokenStorage.getToken();
 
@@ -58,30 +46,20 @@ class AuthService {
     try {
       const user = await authRepository.getCurrentUser(token);
       return user;
-    } catch (error) {
-      // Se falhar, limpar token
+    } catch {
       tokenStorage.removeToken();
       return null;
     }
   }
 
-  /**
-   * Obter token atual
-   */
   getToken(): string | null {
     return tokenStorage.getToken();
   }
 
-  /**
-   * Obter método de autenticação atual
-   */
   getAuthMethod(): AuthMethod | null {
     return tokenStorage.getAuthMethod();
   }
 
-  /**
-   * Verificar se há token válido
-   */
   hasValidToken(): boolean {
     return tokenStorage.isValidToken();
   }

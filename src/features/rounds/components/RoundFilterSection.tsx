@@ -1,10 +1,9 @@
 import { FiFilter } from "react-icons/fi";
-import { format } from "date-fns";
-import { Label, Select, Button } from "@platform/design-system";
+import { format, parse } from "date-fns";
+import { Select, Button } from "@platform/design-system";
 import { Player, Round } from "@/types";
 
 interface RoundFilterSectionProps {
-  context: "round" | "team";
   rounds: Round[];
   showRoundFilter: boolean;
   selectedRoundId: number | null;
@@ -14,7 +13,6 @@ interface RoundFilterSectionProps {
 }
 
 const RoundFilterSection = ({
-  context,
   rounds,
   showRoundFilter,
   selectedRoundId,
@@ -56,7 +54,7 @@ const RoundFilterSection = ({
               { value: "", label: "Todas as rodadas" },
               ...rounds.map((round) => ({
                 value: String(round.id),
-                label: `${round.name} (${format(new Date(round.round_date), "dd/MM/yyyy")})`,
+                label: `${round.name} (${format(parse(round.round_date, "yyyy-MM-dd", new Date()), "dd/MM/yyyy")})`,
               })),
             ]}
           />

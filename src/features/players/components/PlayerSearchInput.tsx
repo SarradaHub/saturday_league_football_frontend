@@ -32,7 +32,7 @@ const PlayerSearchInput = ({
         onKeyDown={(event) => event.key === "Enter" && onSubmit()}
         placeholder={
           selectedPlayer
-            ? `Adicionar ${selectedPlayer.name} ao ${context === "team" ? "time" : "round"}`
+            ? `Adicionar ${selectedPlayer.display_name} ao ${context === "team" ? "time" : "round"}`
             : "Busque jogadores ou crie um novo"
         }
         style={{ paddingLeft: "2.5rem", paddingRight: isLoading ? "6rem" : "1rem" }}
@@ -64,7 +64,7 @@ const PlayerSearchInput = ({
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f0f0f0"; }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
           >
-            {player.name}
+            {player.display_name}
           </button>
         ))}
       </div>

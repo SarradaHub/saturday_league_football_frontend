@@ -4,13 +4,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { FaArrowLeft, FaFutbol, FaEdit, FaTrash, FaChartLine, FaTrophy } from "react-icons/fa";
+import { FaArrowLeft, FaFutbol, FaEdit, FaTrash, FaChartLine, FaTrophy, FaUserPlus, FaExchangeAlt } from "react-icons/fa";
 import matchRepository from "@/features/matches/api/matchRepository";
 import roundRepository from "@/features/rounds/api/roundRepository";
 import playerStatsRepository from "@/features/player-stats/api/playerStatsRepository";
 import EditMatchModal from "@/features/matches/components/EditMatchModal";
 import EditMatchStatsModal from "@/features/matches/components/EditMatchStatsModal";
 import DeleteMatchModal from "@/features/matches/components/DeleteMatchModal";
+import AddGoalkeeperModal from "@/features/matches/components/AddGoalkeeperModal";
+import SubstitutePlayerInMatchModal from "@/features/matches/components/SubstitutePlayerInMatchModal";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@platform/design-system";
 import { colors } from "@platform/design-system/tokens";
@@ -55,6 +57,8 @@ const MatchDetailsPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditStatsModalOpen, setIsEditStatsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAddGoalkeeperModalOpen, setIsAddGoalkeeperModalOpen] = useState(false);
+  const [isSubstitutePlayerModalOpen, setIsSubstitutePlayerModalOpen] = useState(false);
   const [toast, setToast] = useState<{ open: boolean; message: string | null }>(
     {
       open: false,
@@ -110,7 +114,6 @@ const MatchDetailsPage = () => {
         team_2_goals?: number;
       };
     }) => {
-      // Calculate winning_team_id and draw based on goals
       const team1Goals = data.team_1_goals ?? 0;
       const team2Goals = data.team_2_goals ?? 0;
       const isDraw = team1Goals === team2Goals;
@@ -187,12 +190,8 @@ const MatchDetailsPage = () => {
     onSuccess: async () => {
       setToast({ open: true, message: "Estatísticas atualizadas com sucesso!" });
       setIsEditStatsModalOpen(false);
-      // Invalidate and refetch match query to get updated statistics
-      // First invalidate to mark as stale
       queryClient.invalidateQueries({ queryKey: queryKeys.match(matchId) });
-      // Then refetch to get fresh data
       const updatedMatch = await refetchMatch();
-      // Also invalidate round if we have round_id to update standings
       if (updatedMatch.data?.round_id) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.round(updatedMatch.data.round_id),
@@ -213,7 +212,6 @@ const MatchDetailsPage = () => {
     mutationFn: () => matchRepository.finalizeMatch(matchId),
     onSuccess: async () => {
       setToast({ open: true, message: "Partida finalizada com sucesso!" });
-      // Invalidate and refetch match query to get updated result
       await queryClient.invalidateQueries({ queryKey: queryKeys.match(matchId) });
       await refetchMatch();
       if (match?.round_id) {
@@ -317,6 +315,28 @@ const MatchDetailsPage = () => {
                     type="button"
                     variant="primary"
                     size="sm"
+                    onClick={() => setIsAddGoalkeeperModalOpen(true)}
+                    leftIcon={FaUserPlus}
+                    aria-label="Adicionar goleiro"
+                    title="Adicionar jogador da rodada como goleiro ao time"
+                  >
+                    Adicionar Goleiro
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsSubstitutePlayerModalOpen(true)}
+                    leftIcon={FaExchangeAlt}
+                    aria-label="Substituir jogador"
+                    title="Substituir jogador na partida"
+                  >
+                    Substituir Jogador
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={() => finalizeMatchMutation.mutate()}
                     disabled={(!team1?.players?.length || !team2?.players?.length) || finalizeMatchMutation.isPending || (match?.winning_team !== null || match?.draw === true)}
                     loading={finalizeMatchMutation.isPending}
@@ -382,12 +402,7 @@ const MatchDetailsPage = () => {
           isOpen={isEditStatsModalOpen}
           onClose={() => setIsEditStatsModalOpen(false)}
           onSave={async (playerStats) => {
-            try {
-              await updateStatsMutation.mutateAsync(playerStats);
-            } catch (error) {
-              // Error is already handled in mutation onError
-              throw error;
-            }
+            await updateStatsMutation.mutateAsync(playerStats);
           }}
           match={match}
         />
@@ -414,6 +429,42 @@ const MatchDetailsPage = () => {
           }}
           match={match}
           isDeleting={deleteMatchMutation.isPending}
+        />
+      )}
+
+      {isAddGoalkeeperModalOpen && (
+        <AddGoalkeeperModal
+          isOpen={isAddGoalkeeperModalOpen}
+          onClose={() => setIsAddGoalkeeperModalOpen(false)}
+          onAdd={async () => {
+            setToast({ open: true, message: "Jogador adicionado ao time com sucesso!" });
+            queryClient.invalidateQueries({ queryKey: queryKeys.match(matchId) });
+            if (match?.round_id) {
+              queryClient.invalidateQueries({
+                queryKey: queryKeys.round(match.round_id),
+              });
+            }
+            await refetchMatch();
+          }}
+          match={match}
+        />
+      )}
+
+      {isSubstitutePlayerModalOpen && (
+        <SubstitutePlayerInMatchModal
+          isOpen={isSubstitutePlayerModalOpen}
+          onClose={() => setIsSubstitutePlayerModalOpen(false)}
+          onSubstitute={async () => {
+            setToast({ open: true, message: "Substituição realizada com sucesso!" });
+            queryClient.invalidateQueries({ queryKey: queryKeys.match(matchId) });
+            if (match?.round_id) {
+              queryClient.invalidateQueries({
+                queryKey: queryKeys.round(match.round_id),
+              });
+            }
+            await refetchMatch();
+          }}
+          match={match}
         />
       )}
 
@@ -463,7 +514,7 @@ const TeamColumn = ({ team, align }: TeamColumnProps) => {
               animate={{ opacity: 1, x: 0 }}
               style={{ fontSize: "0.875rem", color: "#404040" }}
             >
-              {player.name}
+              {player.display_name}
             </motion.li>
           ))}
         </ul>
@@ -504,7 +555,7 @@ const TeamColumn = ({ team, align }: TeamColumnProps) => {
         <ul style={{ marginTop: "0.5rem", listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "0.25rem", ...textAlignStyle }}>
           {team.players.map((player) => (
             <li key={player.id} style={{ fontSize: "0.875rem", color: "#737373" }}>
-              {player.name}
+              {player.display_name}
             </li>
           ))}
         </ul>

@@ -13,7 +13,7 @@ import {
   Bar,
   Cell,
 } from "recharts";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { FaArrowLeft, FaFutbol, FaMedal, FaEdit, FaTrash } from "react-icons/fa";
 import { GiGoalKeeper } from "react-icons/gi";
 import { GoalIcon } from "lucide-react";
@@ -243,10 +243,10 @@ const PlayerDetailsPage = () => {
                 </Button>
                 <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                   <div style={{ display: "flex", height: "4rem", width: "4rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.5rem", fontWeight: 700, color: "#2563eb" }}>
-                    {data.name.charAt(0).toUpperCase()}
+                    {data.display_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <CardTitle style={{ fontSize: "1.875rem" }}>{data.name}</CardTitle>
+                    <CardTitle style={{ fontSize: "1.875rem" }}>{data.display_name}</CardTitle>
                     <p style={{ color: "#737373" }}>
                       Entrou em{" "}
                       {format(new Date(data.created_at), "dd MMMM yyyy")}
@@ -410,7 +410,7 @@ const PlayerDetailsPage = () => {
                             </CardHeader>
                             <CardContent>
                               <p style={{ marginTop: "0.5rem", fontSize: "0.875rem", color: "#737373" }}>
-                                {format(new Date(round.round_date), "dd MMM yyyy")}
+                                {format(parse(round.round_date, "yyyy-MM-dd", new Date()), "dd MMM yyyy")}
                               </p>
                             </CardContent>
                           </Card>

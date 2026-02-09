@@ -1,6 +1,6 @@
 import { ComponentProps, forwardRef, ChangeEvent } from "react";
 import { FaSearch } from "react-icons/fa";
-import { Input, cn } from "@platform/design-system";
+import { Input } from "@platform/design-system";
 
 interface SearchInputProps
   extends Omit<ComponentProps<typeof Input>, "onChange" | "value"> {
