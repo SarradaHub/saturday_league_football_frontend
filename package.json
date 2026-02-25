@@ -64,8 +64,5 @@
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5",
     "vitest": "^4.0.14"
-  },
-  "overrides": {
-    "yocto-queue": "^1.2.2"
   }
 }

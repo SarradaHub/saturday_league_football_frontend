@@ -12,6 +12,11 @@ permissions:
 jobs:
   react-ci:
     uses: SarradaHub/platform/.github/workflows/react-vite-ci.yaml@main
+    env:
+      NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+      NPM_CONFIG_FETCH_RETRIES: 5
+      NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 10000
+      NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 60000
     with:
       working-directory: .
       node-version: "20"
@@ -19,7 +24,14 @@ jobs:
         set -e
         ORIGINAL_DIR=$(pwd)
         echo "Starting in: $ORIGINAL_DIR"
-        npm ci
+        n=0
+        until [ "$n" -ge 3 ]
+        do
+          npm ci && break
+          n=$((n+1))
+          echo "npm ci failed, retry $n/3..."
+          sleep 10
+        done
         cd "$(dirname "$ORIGINAL_DIR")"
         echo "Now in: $(pwd)"
         if [ ! -d "platform" ]; then
