@@ -20,22 +20,20 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
-      // Alias root import to the actual entry point
-      "@sarradahub/design-system$": resolve(
-        __dirname,
-        "../platform/design-system/dist/index.js",
-      ),
-      // Alias subpath imports to their actual locations
+      // Subpaths first so they take precedence over the base alias
       "@sarradahub/design-system/tokens": resolve(
         __dirname,
-        "../platform/design-system/dist/tokens/index.js",
+        "src/design-system/src/tokens/index.ts",
       ),
       "@sarradahub/design-system/css": resolve(
         __dirname,
-        "../platform/design-system/dist/tokens/css-variables.css",
+        "src/design-system/dist/styles.css",
+      ),
+      "@sarradahub/design-system": resolve(
+        __dirname,
+        "src/design-system/src/index.ts",
       ),
     },
-    // Ensure Vite respects package.json exports for subpath imports
     conditions: ["import", "module", "browser", "default"],
   },
 });

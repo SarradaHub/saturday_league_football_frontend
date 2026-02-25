@@ -7,7 +7,7 @@ import jsxA11y from "eslint-plugin-jsx-a11y";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "coverage"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -29,23 +29,25 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       ...jsxA11y.configs.recommended.rules,
+
+      // Mantém regras importantes como erro
+      "@typescript-eslint/no-unused-vars": ["error"],
+      "@typescript-eslint/no-explicit-any": ["error"],
+
+      // Regras de hooks e acessibilidade continuam em warning
+      "react-hooks/exhaustive-deps": "warn",
+      "jsx-a11y/label-has-associated-control": "warn",
+
+      // React Refresh
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
       ],
-      // Design system enforcement rules
-      "react/forbid-dom-props": [
-        "warn",
-        {
-          forbid: [
-            {
-              propName: "style",
-              message:
-                "Use Tailwind classes or design system tokens instead of inline styles",
-            },
-          ],
-        },
-      ],
+
+      // Design system: desliga enforcement de inline styles para reduzir ruído
+      "react/forbid-dom-props": "off",
+
+      // Mantém aviso leve para imports de tokens fora do pacote correto
       "no-restricted-imports": [
         "warn",
         {
@@ -53,7 +55,7 @@ export default tseslint.config(
             {
               group: ["**/tokens.ts", "**/tokens.js"],
               message:
-                "Import tokens from @sarradahub/design-system/tokens instead",
+                "Import tokens de @sarradahub/design-system/tokens em vez de arquivos locais",
             },
           ],
         },

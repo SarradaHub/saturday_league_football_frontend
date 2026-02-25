@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import BaseModal from "@/shared/components/modal/BaseModal";
+import { Modal, Button, Alert } from "@sarradahub/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 
@@ -93,64 +93,75 @@ const CreateChampionshipModal = ({
   };
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Criar Nova Pelada"
-      formId="championship-form"
-      isSubmitting={isSubmitting}
-      submitLabel="Criar Pelada"
-      submitDisabled={!isValid || isSubmitting}
-    >
-      <form
-        id="championship-form"
-        onSubmit={(event) => handleSubmit(handleSubmitForm, event)}
-      >
-        <FormInput
-          label="Nome da Pelada"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Ex: Pelada da Empresa"
-          required
-        />
-        <FormInput
-          label="Descrição (Opcional)"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          placeholder="Adicione uma descrição para sua pelada"
-          type="textarea"
-        />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Criar Nova Pelada">
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <form
+          id="championship-form"
+          onSubmit={(event) => handleSubmit(handleSubmitForm, event)}
+        >
           <FormInput
-            label="Mínimo de jogadores por time"
-            name="min_players_per_team"
-            value={formData.min_players_per_team}
+            label="Nome da Pelada"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
-            placeholder="Mínimo"
-            type="number"
-            inputProps={{ min: 0 }}
+            placeholder="Ex: Pelada da Empresa"
             required
           />
           <FormInput
-            label="Máximo de jogadores por time"
-            name="max_players_per_team"
-            value={formData.max_players_per_team}
+            label="Descrição (Opcional)"
+            name="description"
+            value={formData.description}
             onChange={handleChange}
-            placeholder="Máximo"
-            type="number"
-            inputProps={{ min: 1 }}
-            required
+            placeholder="Adicione uma descrição para sua pelada"
+            type="textarea"
           />
-        </div>
-        {error && (
-          <div className="mb-6 rounded-lg border border-red-100 bg-red-50 p-3">
-            <span className="text-sm text-red-600">{error}</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+            <FormInput
+              label="Mínimo de jogadores por time"
+              name="min_players_per_team"
+              value={formData.min_players_per_team}
+              onChange={handleChange}
+              placeholder="Mínimo"
+              type="number"
+              inputProps={{ min: 0 }}
+              required
+            />
+            <FormInput
+              label="Máximo de jogadores por time"
+              name="max_players_per_team"
+              value={formData.max_players_per_team}
+              onChange={handleChange}
+              placeholder="Máximo"
+              type="number"
+              inputProps={{ min: 1 }}
+              required
+            />
           </div>
-        )}
-      </form>
-    </BaseModal>
+          {error && <Alert variant="error">{error}</Alert>}
+        </form>
+        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            aria-label="Cancelar"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            form="championship-form"
+            loading={isSubmitting}
+            disabled={!isValid || isSubmitting}
+            aria-label="Criar Pelada"
+          >
+            Criar Pelada
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 };
 

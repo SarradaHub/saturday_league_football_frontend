@@ -1,0 +1,33 @@
+services:
+  frontend:
+    image: node:20-alpine
+    working_dir: /workspace/saturday_league_football_frontend
+    # Build design-system if it exists, install dependencies, then run dev server
+    command: >
+      sh -c '
+        ORIGINAL_DIR=$(pwd);
+        if [ -d ../platform/design-system ] && [ -f ../platform/design-system/package.json ]; then
+          echo "Building design-system...";
+          (cd ../platform/design-system && npm install && npm run build);
+        fi;
+        cd "$ORIGINAL_DIR";
+        if [ ! -d node_modules/.bin ] || [ -z "$(ls -A node_modules/.bin 2>/dev/null)" ]; then
+          echo "Installing frontend dependencies...";
+          npm install;
+        fi;
+        echo "Starting dev server...";
+        npm run dev -- --host 0.0.0.0 --port 5173
+      '
+    ports:
+      - "5173:5173"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      VITE_API_PROXY_TARGET: "http://host.docker.internal:3004"
+    volumes:
+      - ../:/workspace
+      - frontend_node_modules:/workspace/saturday_league_football_frontend/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  frontend_node_modules:

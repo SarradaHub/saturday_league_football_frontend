@@ -17,10 +17,11 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
-      "@sarradahub/design-system": ["../../platform/design-system/dist/index"],
-      "@sarradahub/design-system/tokens": [
-        "../../platform/design-system/dist/tokens/index"
-      ]
+      "@sarradahub/design-system": ["design-system/src/index.ts"],
+      "@sarradahub/design-system/tokens": ["design-system/src/tokens/index.ts"],
+      "@sarradahub/design-system/icons": ["design-system/src/icons/index.ts"],
+      "@sarradahub/design-system/utils": ["design-system/src/utils/cn.ts"],
+      "@sarradahub/design-system/css": ["design-system/dist/styles.css"]
     },
 
     /* Linting */

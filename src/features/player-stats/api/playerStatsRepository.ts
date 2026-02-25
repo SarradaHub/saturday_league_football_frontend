@@ -1,5 +1,5 @@
-import { BaseService } from "@/shared/api/baseService";
-import { PlayerStat } from "@/types";
+import { BaseService, QueryParams } from "@/shared/api/baseService";
+import type { PlayerStat } from "@/types";
 
 interface PlayerStatPayload
   extends Pick<
@@ -14,17 +14,29 @@ interface PlayerStatPayload
   player_id: number;
 }
 
+interface PlayerStatsQueryParams extends QueryParams {
+  match_id?: number;
+  team_id?: number;
+  fields?: string;
+  include?: string;
+}
+
 class PlayerStatsRepository extends BaseService<
   PlayerStat,
   PlayerStatPayload,
-  PlayerStatPayload
+  PlayerStatPayload,
+  PlayerStatsQueryParams
 > {
   constructor() {
     super("/player_stats");
   }
 
-  list() {
-    return super.getAll();
+  list(params?: PlayerStatsQueryParams) {
+    return super.getAll(params);
+  }
+
+  listPaginated(params?: PlayerStatsQueryParams) {
+    return super.getAllPaginated(params);
   }
 
   findById(id: number) {
@@ -32,9 +44,24 @@ class PlayerStatsRepository extends BaseService<
   }
 
   findByMatchId(matchId: number) {
-    return this.executeRequest<PlayerStat[]>("GET", `/match/${matchId}`).then(
-      (response) => this.handleResponse(response),
-    );
+    return this.executeRequest<{ data: PlayerStat[]; meta?: unknown } | PlayerStat[]>(
+      "GET",
+      `/match/${matchId}`,
+    ).then((response) => {
+      const result = this.handleResponse(response);
+      if (
+        result &&
+        typeof result === "object" &&
+        "data" in result &&
+        Array.isArray((result as { data: unknown }).data)
+      ) {
+        return (result as { data: PlayerStat[] }).data;
+      }
+      if (Array.isArray(result)) {
+        return result as PlayerStat[];
+      }
+      return [];
+    });
   }
 
   createPlayerStat(data: PlayerStatPayload) {
@@ -53,6 +80,18 @@ class PlayerStatsRepository extends BaseService<
     return this.executeRequest<PlayerStat[]>("POST", `/match/${matchId}/bulk`, {
       player_stats: playerStats,
     }).then((response) => this.handleResponse(response));
+  }
+
+  addGoalkeeper(matchId: number, teamId: number, playerId: number) {
+    return this.executeRequest<PlayerStat>(
+      "POST",
+      `/match/${matchId}/goalkeepers`,
+      {
+        match_id: matchId,
+        team_id: teamId,
+        player_id: playerId,
+      },
+    ).then((response) => this.handleResponse(response));
   }
 }
 

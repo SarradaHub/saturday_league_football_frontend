@@ -19,7 +19,18 @@ jobs:
         set -e
         ORIGINAL_DIR=$(pwd)
         echo "Starting in: $ORIGINAL_DIR"
-        npm ci
+        n=0
+        until [ "$n" -ge 3 ]
+        do
+          export NPM_CONFIG_REGISTRY="https://registry.npmjs.org/"
+          export NPM_CONFIG_FETCH_RETRIES=5
+          export NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=10000
+          export NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=60000
+          npm ci && break
+          n=$((n+1))
+          echo "npm ci failed, retry $n/3..."
+          sleep 10
+        done
         cd "$(dirname "$ORIGINAL_DIR")"
         echo "Now in: $(pwd)"
         if [ ! -d "platform" ]; then
@@ -34,11 +45,30 @@ jobs:
         fi
         cd platform/design-system
         echo "Installing design-system dependencies..."
+        export NPM_CONFIG_REGISTRY="https://registry.npmjs.org/"
+        export NPM_CONFIG_FETCH_RETRIES=5
+        export NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=10000
+        export NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=60000
         npm ci --legacy-peer-deps
         echo "Building design-system..."
         npm run build
         cd "$ORIGINAL_DIR"
         echo "Back in original directory: $(pwd)"
-      lint-command: npm run lint
-      test-command: npm run test -- --coverage
-      build-command: npm run build
+      lint-command: |
+        export NPM_CONFIG_REGISTRY="https://registry.npmjs.org/"
+        export NPM_CONFIG_FETCH_RETRIES=5
+        export NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=10000
+        export NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=60000
+        npm run lint
+      test-command: |
+        export NPM_CONFIG_REGISTRY="https://registry.npmjs.org/"
+        export NPM_CONFIG_FETCH_RETRIES=5
+        export NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=10000
+        export NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=60000
+        npm run test -- --coverage
+      build-command: |
+        export NPM_CONFIG_REGISTRY="https://registry.npmjs.org/"
+        export NPM_CONFIG_FETCH_RETRIES=5
+        export NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=10000
+        export NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=60000
+        npm run build

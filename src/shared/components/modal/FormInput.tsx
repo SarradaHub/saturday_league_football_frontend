@@ -17,6 +17,7 @@ interface FormInputProps {
   rows?: number;
   inputProps?: InputHTMLAttributes<HTMLInputElement>;
   error?: string;
+  min?: string;
 }
 
 const FormInput = ({
@@ -31,6 +32,7 @@ const FormInput = ({
   rows = 3,
   inputProps = {},
   error,
+  min,
 }: FormInputProps) => {
   const renderField = () => {
     if (type === "textarea") {
@@ -52,7 +54,6 @@ const FormInput = ({
     }
 
     if (type === "select") {
-      // Convert options format from { id, name } to { value, label }
       const selectOptions = [
         { value: "", label: placeholder },
         ...options.map((option) => ({
@@ -88,12 +89,13 @@ const FormInput = ({
         required={required}
         error={error}
         label={label}
+        {...(min ? { min } : {})}
         {...inputProps}
       />
     );
   };
 
-  return <div className="mb-6">{renderField()}</div>;
+  return <div style={{ marginBottom: "1.5rem" }}>{renderField()}</div>;
 };
 
 export default FormInput;

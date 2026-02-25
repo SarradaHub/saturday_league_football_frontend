@@ -1,4 +1,4 @@
-import { BaseService } from "@/shared/api/baseService";
+import { BaseService, QueryParams } from "@/shared/api/baseService";
 import { Championship } from "@/types";
 
 type UpsertChampionshipPayload = Partial<
@@ -8,21 +8,33 @@ type UpsertChampionshipPayload = Partial<
   >
 >;
 
+interface ChampionshipQueryParams extends QueryParams {
+  fields?: string;
+  include?: string;
+}
+
 class ChampionshipRepository extends BaseService<
   Championship,
   UpsertChampionshipPayload,
-  UpsertChampionshipPayload
+  UpsertChampionshipPayload,
+  ChampionshipQueryParams
 > {
   constructor() {
     super("/championships");
   }
 
-  list() {
-    return super.getAll();
+  list(params?: ChampionshipQueryParams) {
+    return super.getAll(params);
   }
 
-  findById(id: number) {
-    return super.getById(id);
+  listPaginated(params?: ChampionshipQueryParams) {
+    return super.getAllPaginated(params);
+  }
+
+  findById(id: number, params?: Pick<ChampionshipQueryParams, "fields" | "include">) {
+    return this.executeRequest<Championship>("GET", `/${id}`, undefined, params).then(
+      (response) => this.handleResponse(response),
+    );
   }
 
   createChampionship(data: UpsertChampionshipPayload) {
@@ -35,6 +47,22 @@ class ChampionshipRepository extends BaseService<
 
   deleteChampionship(id: number) {
     return super.delete(id);
+  }
+
+  getStatistics(championshipId: number) {
+    return this.executeRequest<{
+      [playerId: number]: {
+        player: { id: number; display_name: string };
+        goals: number;
+        assists: number;
+        own_goals: number;
+        matches: number;
+        goalkeeper_count: number;
+        wins: number;
+        losses: number;
+        draws: number;
+      };
+    }>("GET", `/${championshipId}/statistics`).then((response) => this.handleResponse(response));
   }
 }
 

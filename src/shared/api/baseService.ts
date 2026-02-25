@@ -1,13 +1,11 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import { tokenStorage } from "@/shared/utils/tokenStorage";
 
 export class ApiConfigAdapter {
   private static instance: ApiConfigAdapter;
   private readonly baseURL: string;
 
   private constructor() {
-    // Use relative URL in development to leverage Vite proxy
-    // If VITE_BASE_URL is set to http://localhost (without port), use empty string for proxy
-    // Otherwise use the provided base URL
     const envBaseURL = import.meta.env.VITE_BASE_URL;
     if (envBaseURL === "http://localhost" || !envBaseURL) {
       this.baseURL = "";
@@ -104,6 +102,35 @@ export class HttpMethodFactory {
   }
 }
 
+export interface PaginationMeta {
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface PaginationLinks {
+  first?: string;
+  last?: string;
+  next?: string;
+  prev?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
+  links?: PaginationLinks;
+  responseTimeMs?: number;
+}
+
+export interface QueryParams {
+  page?: number;
+  per_page?: number;
+  fields?: string;
+  include?: string;
+  [key: string]: unknown;
+}
+
 export abstract class BaseService<
   TEntity,
   TCreate = Partial<TEntity>,
@@ -120,6 +147,35 @@ export abstract class BaseService<
       timeout: 5000,
     });
     this.basePath = basePath;
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors(): void {
+    this.api.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const token = tokenStorage.getToken();
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      },
+    );
+
+    this.api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          tokenStorage.removeToken();
+          if (window.location.pathname !== "/login") {
+            window.location.href = "/login";
+          }
+        }
+        return Promise.reject(error);
+      },
+    );
   }
 
   protected async executeRequest<TResponse>(
@@ -145,15 +201,60 @@ export abstract class BaseService<
     throw new Error("An unexpected error occurred");
   }
 
-  protected async getAll(params?: TQuery): Promise<TEntity[]> {
+  protected async getAll(params?: TQuery & QueryParams): Promise<TEntity[]> {
     try {
-      const response = await this.executeRequest<TEntity[]>(
+      const response = await this.executeRequest<
+        TEntity[] | PaginatedResponse<TEntity>
+      >("GET", "/", undefined, params);
+      const data = this.handleResponse(response);
+      if (data && typeof data === "object" && "data" in data) {
+        return (data as PaginatedResponse<TEntity>).data;
+      }
+      return data as TEntity[];
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  protected async getAllPaginated(
+    params?: TQuery & QueryParams,
+  ): Promise<PaginatedResponse<TEntity>> {
+    try {
+      const response = await this.executeRequest<PaginatedResponse<TEntity>>(
         "GET",
         "/",
         undefined,
         params,
       );
-      return this.handleResponse(response);
+      const data = this.handleResponse(response);
+
+      const result: PaginatedResponse<TEntity> = {
+        ...data,
+      };
+
+      const totalCountHeader = response.headers["x-total-count"];
+      const parsedTotal = totalCountHeader ? Number.parseInt(totalCountHeader, 10) : Number.NaN;
+      if (!Number.isNaN(parsedTotal)) {
+        result.meta = {
+          ...result.meta,
+          total: parsedTotal,
+        };
+      }
+
+      const linkHeader = response.headers["link"];
+      if (linkHeader) {
+        result.links = parseLinkHeader(linkHeader);
+      }
+
+      const responseTimeHeader = response.headers["x-response-time"];
+      if (responseTimeHeader) {
+        const numeric = Number.parseFloat(responseTimeHeader.replace("ms", ""));
+        if (!Number.isNaN(numeric)) {
+          result.responseTimeMs = numeric;
+        }
+      }
+
+      return result;
     } catch (error) {
       this.handleError(error);
     }
@@ -197,4 +298,23 @@ export abstract class BaseService<
       this.handleError(error);
     }
   }
+}
+
+function parseLinkHeader(header: string): PaginationLinks {
+  const links: PaginationLinks = {};
+
+  const parts = header.split(",");
+  for (const part of parts) {
+    const section = part.trim();
+    const match = section.match(/^<([^>]+)>;\s*rel="([^"]+)"$/);
+    if (!match) continue;
+
+    const [, url, rel] = match;
+
+    if (rel === "first" || rel === "last" || rel === "next" || rel === "prev") {
+      links[rel] = url;
+    }
+  }
+
+  return links;
 }

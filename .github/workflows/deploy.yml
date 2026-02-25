@@ -24,5 +24,4 @@ jobs:
 
       - name: Build application
         run: npm run build
-
-      # TODO: Add deployment step(s) for your platform
+ 

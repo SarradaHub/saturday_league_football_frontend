@@ -21,14 +21,19 @@ import {
   FaMedal,
   FaPlus,
   FaUsers,
+  FaEdit,
+  FaTrash,
+  FaUserMinus,
 } from "react-icons/fa";
 import teamRepository from "@/features/teams/api/teamRepository";
 import playerRepository from "@/features/players/api/playerRepository";
 import CreatePlayerModal from "@/features/players/components/CreatePlayerModal";
+import EditTeamModal from "@/features/teams/components/EditTeamModal";
+import DeleteTeamModal from "@/features/teams/components/DeleteTeamModal";
 import StatCard from "@/shared/components/cards/StatCard";
 import SearchInput from "@/shared/components/search/SearchInput";
-import Container from "@/shared/components/layout/Container";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
+import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@sarradahub/design-system";
 import { colors } from "@sarradahub/design-system/tokens";
 import { Player } from "@/types";
 
@@ -42,6 +47,8 @@ const TeamDetailsPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [toast, setToast] = useState<{ open: boolean; message: string | null }>(
     {
@@ -83,13 +90,67 @@ const TeamDetailsPage = () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.team(teamId) });
   };
 
+  const updateTeamMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: { name: string } }) =>
+      teamRepository.updateTeam(id, data),
+    onSuccess: () => {
+      setToast({ open: true, message: "Time atualizado com sucesso!" });
+      setIsEditModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: queryKeys.team(teamId) });
+    },
+    onError: (mutationError) =>
+      setToast({
+        open: true,
+        message:
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao atualizar time.",
+      }),
+  });
+
+  const deleteTeamMutation = useMutation({
+    mutationFn: (id: number) => teamRepository.deleteTeam(id),
+    onSuccess: () => {
+      setToast({ open: true, message: "Time excluído com sucesso!" });
+      setIsDeleteModalOpen(false);
+      navigate(-1);
+    },
+    onError: (mutationError) =>
+      setToast({
+        open: true,
+        message:
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao excluir time. Verifique se o time possui jogadores ou partidas associadas.",
+      }),
+  });
+
+  const removePlayerMutation = useMutation({
+    mutationFn: ({ playerTeamId }: { playerTeamId: number }) =>
+      teamRepository.updateTeam(teamId, {
+        player_teams_attributes: [{ id: playerTeamId, _destroy: true }],
+      }),
+    onSuccess: () => {
+      setToast({ open: true, message: "Jogador removido do time." });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team(teamId) });
+    },
+    onError: (mutationError) =>
+      setToast({
+        open: true,
+        message:
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao remover jogador do time.",
+      }),
+  });
+
   const players = useMemo(() => team?.players ?? [], [team?.players]);
 
   const filteredPlayers = useMemo(() => {
     const normalized = searchTerm.trim().toLowerCase();
     if (!normalized) return players;
     return players.filter((player) =>
-      player.name.toLowerCase().includes(normalized),
+      player.display_name.toLowerCase().includes(normalized),
     );
   }, [players, searchTerm]);
 
@@ -133,7 +194,7 @@ const TeamDetailsPage = () => {
       const goals = statsList.reduce((acc, stat) => acc + stat.goals, 0);
       const assists = statsList.reduce((acc, stat) => acc + stat.assists, 0);
       return {
-        name: player.name.split(" ")[0],
+        name: player.first_name ?? player.display_name.split(" ")[0],
         goals,
         assists,
       };
@@ -150,17 +211,15 @@ const TeamDetailsPage = () => {
 
   if (!Number.isFinite(teamId)) {
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-red-50 px-4 py-3 text-red-600">
-          Identificador de time inválido.
-        </span>
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <Alert variant="error">Identificador de time inválido.</Alert>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
         <LoadingSpinner size="lg" text="Carregando..." />
       </div>
     );
@@ -174,149 +233,203 @@ const TeamDetailsPage = () => {
           ? "Ocorreu um erro inesperado."
           : "Time não encontrado.";
     return (
-      <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-red-50 px-4 py-3 text-red-600">
-          {message}
-        </span>
+      <div style={{ marginTop: "6rem", display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <Alert variant="error">{message}</Alert>
       </div>
     );
   }
 
   return (
-    <div className="mt-24 min-h-screen bg-gray-50 py-8 font-sans">
+    <div style={{ marginTop: "6rem", minHeight: "100vh", backgroundColor: "#fafafa", padding: "2rem 0" }}>
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-              <div>
-                <button
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "1.5rem" }}>
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", flex: 1 }}>
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => navigate(-1)}
-                  className="mb-4 inline-flex items-center gap-2 text-gray-600 transition hover:text-gray-800"
+                  leftIcon={FaArrowLeft}
                 >
-                  <FaArrowLeft aria-hidden />
                   Voltar
-                </button>
-                <div className="flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-600">
+                </Button>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <div style={{ display: "flex", height: "4rem", width: "4rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.5rem", fontWeight: 700, color: "#2563eb" }}>
                     {team.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">
-                      {team.name}
-                    </h1>
-                    <p className="text-gray-600">
+                    <CardTitle style={{ fontSize: "1.875rem" }}>{team.name}</CardTitle>
+                    <p style={{ color: "#737373" }}>
                       Criado em{" "}
                       {format(new Date(team.created_at), "dd MMMM yyyy")}
                     </p>
                   </div>
                 </div>
               </div>
-              <span className="inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800">
-                {players.length} jogadores
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", padding: "0.5rem 1rem", fontSize: "0.875rem", fontWeight: 500, color: "#1e40af" }}>
+                  {players.length} jogadores
+                </span>
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsEditModalOpen(true)}
+                    leftIcon={FaEdit}
+                    aria-label="Editar time"
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    leftIcon={FaTrash}
+                    aria-label="Excluir time"
+                  >
+                    Excluir
+                  </Button>
+                </div>
+              </div>
             </div>
-          </section>
+          </Card>
 
-          <section className="md:col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div style={{ gridColumn: "span 12", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
             <StatCard
               title="Total de Jogadores"
               value={stats.totalPlayers}
-              icon={<FaUsers className="text-blue-500" aria-hidden />}
-              accentColorClassName="border-blue-500"
+              icon={<FaUsers className="text-primary-500" aria-hidden />}
+              accentColorClassName="border-primary-500"
             />
             <StatCard
               title="Partidas"
               value={stats.totalMatches}
-              icon={<FaFutbol className="text-green-500" aria-hidden />}
-              accentColorClassName="border-green-500"
+              icon={<FaFutbol className="text-success-500" aria-hidden />}
+              accentColorClassName="border-success-500"
             />
             <StatCard
               title="Gols"
               value={stats.totalGoals}
-              icon={<FaMedal className="text-yellow-500" aria-hidden />}
-              accentColorClassName="border-yellow-500"
+              icon={<FaMedal className="text-warning-500" aria-hidden />}
+              accentColorClassName="border-warning-500"
             />
             <StatCard
               title="Assistências"
               value={stats.totalAssists}
-              icon={<FaChartLine className="text-indigo-500" aria-hidden />}
-              accentColorClassName="border-indigo-500"
+              icon={<FaChartLine className="text-secondary-500" aria-hidden />}
+              accentColorClassName="border-secondary-500"
             />
             <StatCard
               title="Média Gols/Jogador"
               value={stats.goalsPerPlayer}
-              icon={<FaFutbol className="text-purple-500" aria-hidden />}
-              accentColorClassName="border-purple-500"
+              icon={<FaFutbol className="text-secondary-500" aria-hidden />}
+              accentColorClassName="border-secondary-500"
             />
-          </section>
+          </div>
 
-          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
-            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <div style={{ marginBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
-                <h2 className="text-2xl font-semibold text-gray-900">
-                  Jogadores
-                </h2>
-                <p className="text-sm text-gray-500">
+                <CardTitle style={{ fontSize: "1.5rem" }}>Jogadores</CardTitle>
+                <p style={{ fontSize: "0.875rem", color: "#737373", marginTop: "0.25rem" }}>
                   Selecione um jogador para ver detalhes individuais.
                 </p>
               </div>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", flexWrap: "wrap" }}>
                 <SearchInput
                   value={searchTerm}
                   onChange={setSearchTerm}
                   placeholder="Buscar jogador..."
                 />
-                <button
+                <Button
                   type="button"
+                  variant="primary"
+                  size="md"
                   onClick={() => setModalOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
+                  leftIcon={FaPlus}
                 >
-                  <FaPlus aria-hidden />
                   Novo Jogador
-                </button>
+                </Button>
               </div>
             </div>
-            {filteredPlayers.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredPlayers.map((player: Player) => (
-                  <motion.button
-                    key={player.id}
-                    type="button"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onClick={() => navigate(`/players/${player.id}`)}
-                  >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-lg font-bold text-blue-600">
-                      {player.name.charAt(0).toUpperCase()}
-                    </span>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {player.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        Gols: {player.total_goals} • Assistências:{" "}
-                        {player.total_assists}
-                      </p>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            ) : (
-              <p className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
-                Nenhum jogador encontrado.
-              </p>
-            )}
-          </section>
+            <CardContent>
+              {filteredPlayers.length > 0 ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1rem" }}>
+                  {filteredPlayers.map((player: Player, index: number) => (
+                    <motion.div
+                      key={player.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Card
+                        variant="outlined"
+                        padding="md"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => navigate(`/players/${player.id}`)}
+                      >
+                        <CardContent>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                              <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.125rem", fontWeight: 700, color: "#2563eb" }}>
+                                {(player.inscription_order ?? index + 1).toString()}
+                              </span>
+                              <div style={{ flex: 1 }}>
+                                <h3 style={{ fontWeight: 600, color: "#171717" }}>
+                                  {player.display_name}
+                                </h3>
+                                <p style={{ fontSize: "0.875rem", color: "#737373" }}>
+                                  Gols: {player.total_goals} • Assistências:{" "}
+                                  {player.total_assists}
+                                </p>
+                              </div>
+                            </div>
+                            {typeof player.player_team_id === "number" && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                aria-label="Remover jogador do time"
+                                leftIcon={FaUserMinus}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const ptId = player.player_team_id;
+                                if (typeof ptId === "number" && window.confirm(`Remover ${player.display_name} do time?`)) {
+                                  removePlayerMutation.mutate({ playerTeamId: ptId });
+                                }
+                                }}
+                                disabled={removePlayerMutation.isPending}
+                              >
+                                Remover do time
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <Card variant="outlined" padding="lg" style={{ textAlign: "center", color: "#737373" }}>
+                  <CardContent>
+                    Nenhum jogador encontrado.
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
 
-          <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Desempenho Aggregado
-            </h2>
-            {chartData.length > 0 ? (
-              <div className="mt-6 h-80">
-                <ResponsiveContainer width="100%" height="100%">
+          <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
+            <CardHeader>
+              <CardTitle style={{ fontSize: "1.5rem" }}>Desempenho Aggregado</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chartData.length > 0 ? (
+                <div style={{ marginTop: "1.5rem", height: "20rem", minHeight: "320px", width: "100%" }}>
+                <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
@@ -352,13 +465,16 @@ const TeamDetailsPage = () => {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
-            ) : (
-              <p className="mt-4 rounded-lg border border-dashed border-gray-200 p-6 text-center text-gray-500">
-                Estatísticas insuficientes para gerar gráficos.
-              </p>
-            )}
-          </section>
+                </div>
+              ) : (
+                <Card variant="outlined" padding="lg" style={{ marginTop: "1rem", textAlign: "center", color: "#737373" }}>
+                  <CardContent>
+                    Estatísticas insuficientes para gerar gráficos.
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </Container>
 
@@ -374,8 +490,32 @@ const TeamDetailsPage = () => {
           }}
           championshipId={team.championship_id}
           context="team"
+          roundId={team.round_id}
           currentPlayers={players}
           onExistingPlayerAdded={handleExistingPlayerAdded}
+        />
+      )}
+
+      {isEditModalOpen && (
+        <EditTeamModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onUpdate={async (id, data) => {
+            await updateTeamMutation.mutateAsync({ id, data });
+          }}
+          team={team}
+        />
+      )}
+
+      {isDeleteModalOpen && (
+        <DeleteTeamModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={async () => {
+            await deleteTeamMutation.mutateAsync(teamId);
+          }}
+          team={team}
+          isDeleting={deleteTeamMutation.isPending}
         />
       )}
 

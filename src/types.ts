@@ -26,7 +26,10 @@ export interface Round {
 
 export interface Player {
   id: number;
-  name: string;
+  display_name: string;
+  first_name?: string;
+  last_name?: string;
+  nickname?: string;
   position?: string;
   championship_id?: number;
   created_at: string;
@@ -36,6 +39,14 @@ export interface Player {
   total_own_goals: number;
   rounds?: Round[];
   player_stats?: PlayerStat[];
+  /** Set when player is listed in a round (from RoundPresenter) */
+  player_round_id?: number;
+  /** Set when player is listed in a team (from TeamPresenter); used to remove player from team. */
+  player_team_id?: number;
+  /** 1-based order of inscription in the team (from TeamPresenter). */
+  inscription_order?: number;
+  blocked?: boolean;
+  goalkeeper_only?: boolean;
 }
 
 export interface PlayerStat {
@@ -46,6 +57,7 @@ export interface PlayerStat {
   was_goalkeeper: boolean;
   match_id: number;
   team_id: number;
+  player_id: number;
   created_at: string;
   updated_at: string;
 }
@@ -62,10 +74,12 @@ export interface Match {
   team_1_goals_scorer: Player[];
   team_1_assists: Player[];
   team_1_own_goals_scorer: Player[];
+  team_1_goalkeepers: Player[];
   team_2_goals: number;
   team_2_goals_scorer: Player[];
   team_2_assists: Player[];
   team_2_own_goals_scorer: Player[];
+  team_2_goalkeepers: Player[];
   winning_team: Team | null;
   draw: boolean;
   created_at: string;
@@ -76,9 +90,12 @@ export interface Team {
   id: number;
   name: string;
   championship_id?: number;
+  round_id?: number;
   created_at: string;
   updated_at: string;
   matches?: Match[];
   players?: Player[];
   player_count?: number;
+  /** When true, team is excluded from the next-match queue (e.g. after losing). */
+  is_blocked?: boolean;
 }

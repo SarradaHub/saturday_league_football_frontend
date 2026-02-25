@@ -7,13 +7,13 @@ This project delivers the web experience for the Saturday League Football platfo
 - Championship dashboard with standings, recent results, and upcoming fixtures.
 - Team and player directories with statistics sourced from the backend.
 - Match management views for creating, updating, and tracking fixtures.
-- Responsive layout built with Tailwind CSS and Radix UI primitives.
+- Responsive layout built with the SarradaHub design system.
 - Global state handled with Zustand stores and React Query style data hooks.
 
 ## Tech Stack
 
 - React 19 with TypeScript and Vite.
-- UI composed with Tailwind CSS, Radix UI, and custom design tokens in `src/shared`.
+- UI composed with the SarradaHub design system and shared helpers in `src/shared`.
 - Routing powered by React Router and nested layouts under `src/app`.
 - API integration handled in `src/states` with typed client helpers.
 

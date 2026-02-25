@@ -1,35 +1,47 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const designSystemRoot = resolve(__dirname, "src/design-system");
+const designSystemSrc = resolve(designSystemRoot, "src/index.ts");
+const designSystemTokensSrc = resolve(designSystemRoot, "src/tokens/index.ts");
+const designSystemCss = resolve(designSystemRoot, "dist/styles.css");
 
-// https://vite.dev/config/
+const apiProxyTarget =
+  process.env.VITE_API_PROXY_TARGET?.trim() || "http://localhost:3004";
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react()],
   resolve: {
-    alias: {
-      "@": resolve(__dirname, "src"),
-      // Alias root import to the actual entry point
-      "@sarradahub/design-system$": resolve(
-        __dirname,
-        "../platform/design-system/dist/index.js",
-      ),
-      // Alias subpath imports to their actual locations
-      "@sarradahub/design-system/tokens": resolve(
-        __dirname,
-        "../platform/design-system/dist/tokens/index.js",
-      ),
-      "@sarradahub/design-system/css": resolve(
-        __dirname,
-        "../platform/design-system/dist/tokens/css-variables.css",
-      ),
-    },
-    // Ensure Vite respects package.json exports for subpath imports
+    alias: [
+      { find: "@", replacement: resolve(__dirname, "src") },
+      // Subpaths first so they are not matched by the base alias
+      { find: "@sarradahub/design-system/tokens", replacement: designSystemTokensSrc },
+      { find: "@sarradahub/design-system/css", replacement: designSystemCss },
+      { find: "@sarradahub/design-system/icons", replacement: resolve(designSystemRoot, "src/icons/index.ts") },
+      { find: "@sarradahub/design-system/utils", replacement: resolve(designSystemRoot, "src/utils/cn.ts") },
+      { find: "@sarradahub/design-system", replacement: designSystemSrc },
+    ],
     conditions: ["import", "module", "browser", "default"],
+    dedupe: ["react", "react-dom", "lucide-react", "clsx"],
+  },
+  optimizeDeps: {
+    include: ["lucide-react", "clsx"],
+    exclude: ["@sarradahub/design-system"],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/design-system/, /node_modules/],
+    },
+    rollupOptions: {
+      external: () => false,
+      output: {
+        manualChunks: undefined,
+      },
+    },
   },
   server: {
     port:
@@ -41,7 +53,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/api": {
-        target: "http://localhost:3004",
+        target: apiProxyTarget,
         changeOrigin: true,
         secure: false,
         configure: (proxy) => {
@@ -50,7 +62,22 @@ export default defineConfig({
               "Proxying request:",
               req.method,
               req.url,
-              "-> http://localhost:3004",
+              `-> ${apiProxyTarget}`,
+            );
+          });
+        },
+      },
+      "/users": {
+        target: apiProxyTarget,
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy) => {
+          proxy.on("proxyReq", (_proxyReq, req) => {
+            console.log(
+              "Proxying request:",
+              req.method,
+              req.url,
+              `-> ${apiProxyTarget}`,
             );
           });
         },
