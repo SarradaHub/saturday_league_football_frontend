@@ -22,6 +22,8 @@ interface CreatePlayerModalProps {
   championshipId?: number;
   currentPlayers: Player[];
   context?: "round" | "team";
+  /** When context is "team", pass the round_id so the modal can search players from that round. */
+  roundId?: number;
   rounds?: Round[];
   playersFromRound?: Player[];
   selectedRoundId?: number | null;
@@ -37,6 +39,7 @@ const CreatePlayerModal = ({
   championshipId,
   currentPlayers,
   context = "round",
+  roundId: roundIdProp,
   rounds = [],
   playersFromRound = [],
   selectedRoundId = null,
@@ -69,7 +72,10 @@ const CreatePlayerModal = ({
     }
     setError(null);
     setIsSubmitting(false);
-    if (!championshipId) {
+    const canFetchRound =
+      context === "team" && roundIdProp != null && roundIdProp > 0;
+    const canFetchChampionship = !!championshipId;
+    if (!canFetchChampionship && !canFetchRound) {
       setExistingPlayers([]);
       return;
     }
@@ -82,13 +88,16 @@ const CreatePlayerModal = ({
           if (showRoundFilter && selectedRoundId && selectedRoundId > 0) {
             roundIdParam = selectedRoundId;
           }
-        } else if (context === "team" && targetId) {
-          roundIdParam = targetId;
+        } else if (context === "team" && roundIdProp != null && roundIdProp > 0) {
+          roundIdParam = roundIdProp;
         }
         const params: { round_id?: number; per_page?: number } = {};
         if (roundIdParam != null) params.round_id = roundIdParam;
         if (context === "round" && !roundIdParam) params.per_page = 500;
-        const players = await playerRepository.list(championshipId, params);
+        const players = await playerRepository.list(
+          championshipId ?? undefined,
+          params,
+        );
         
         const availablePlayers = players.filter(
           (player) =>
@@ -108,7 +117,7 @@ const CreatePlayerModal = ({
     };
 
     void fetchPlayers();
-  }, [isOpen, championshipId, context, selectedRoundId, showRoundFilter, targetId]);
+  }, [isOpen, championshipId, context, selectedRoundId, showRoundFilter, roundIdProp]);
 
   const filteredPlayers = useMemo(() => {
     if (!isOpen) return [];

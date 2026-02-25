@@ -109,9 +109,18 @@ export interface PaginationMeta {
   total_pages: number;
 }
 
+export interface PaginationLinks {
+  first?: string;
+  last?: string;
+  next?: string;
+  prev?: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   meta: PaginationMeta;
+  links?: PaginationLinks;
+  responseTimeMs?: number;
 }
 
 export interface QueryParams {
@@ -217,7 +226,35 @@ export abstract class BaseService<
         undefined,
         params,
       );
-      return this.handleResponse(response);
+      const data = this.handleResponse(response);
+
+      const result: PaginatedResponse<TEntity> = {
+        ...data,
+      };
+
+      const totalCountHeader = response.headers["x-total-count"];
+      const parsedTotal = totalCountHeader ? Number.parseInt(totalCountHeader, 10) : Number.NaN;
+      if (!Number.isNaN(parsedTotal)) {
+        result.meta = {
+          ...result.meta,
+          total: parsedTotal,
+        };
+      }
+
+      const linkHeader = response.headers["link"];
+      if (linkHeader) {
+        result.links = parseLinkHeader(linkHeader);
+      }
+
+      const responseTimeHeader = response.headers["x-response-time"];
+      if (responseTimeHeader) {
+        const numeric = Number.parseFloat(responseTimeHeader.replace("ms", ""));
+        if (!Number.isNaN(numeric)) {
+          result.responseTimeMs = numeric;
+        }
+      }
+
+      return result;
     } catch (error) {
       this.handleError(error);
     }
@@ -261,4 +298,23 @@ export abstract class BaseService<
       this.handleError(error);
     }
   }
+}
+
+function parseLinkHeader(header: string): PaginationLinks {
+  const links: PaginationLinks = {};
+
+  const parts = header.split(",");
+  for (const part of parts) {
+    const section = part.trim();
+    const match = section.match(/^<([^>]+)>;\s*rel="([^"]+)"$/);
+    if (!match) continue;
+
+    const [, url, rel] = match;
+
+    if (rel === "first" || rel === "last" || rel === "next" || rel === "prev") {
+      links[rel] = url;
+    }
+  }
+
+  return links;
 }

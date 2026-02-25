@@ -43,6 +43,8 @@ export interface Player {
   player_round_id?: number;
   /** Set when player is listed in a team (from TeamPresenter); used to remove player from team. */
   player_team_id?: number;
+  /** 1-based order of inscription in the team (from TeamPresenter). */
+  inscription_order?: number;
   blocked?: boolean;
   goalkeeper_only?: boolean;
 }
@@ -88,6 +90,7 @@ export interface Team {
   id: number;
   name: string;
   championship_id?: number;
+  round_id?: number;
   created_at: string;
   updated_at: string;
   matches?: Match[];

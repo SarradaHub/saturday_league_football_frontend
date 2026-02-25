@@ -50,6 +50,12 @@ class TeamRepository extends BaseService<
     );
   }
 
+  toggleTeamBlock(id: number) {
+    return this.executeRequest<Team>("POST", `/${id}/toggle_block`).then((response) =>
+      this.handleResponse(response),
+    );
+  }
+
   deleteTeam(id: number) {
     return super.delete(id);
   }

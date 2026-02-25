@@ -35,6 +35,9 @@ const DeleteRoundModal = ({
 
   if (!round) return null;
 
+  const hasMatches = Boolean(round.matches && round.matches.length > 0);
+  const canDelete = !hasMatches;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Excluir Rodada">
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -42,15 +45,15 @@ const DeleteRoundModal = ({
           Tem certeza que deseja excluir a rodada{" "}
           <span style={{ fontWeight: 600 }}>{round.name}</span>?
         </p>
-        <Alert variant="warning">
-          <strong>Atenção:</strong> Esta ação não pode ser desfeita. Todas as
-          partidas, times e estatísticas associadas a esta rodada serão permanentemente excluídos.
-        </Alert>
-        {round.matches && round.matches.length > 0 && (
-          <Alert variant="info">
-            Esta rodada possui <strong>{round.matches.length}</strong>{" "}
-            partida{round.matches.length !== 1 ? "s" : ""} cadastrada
-            {round.matches.length !== 1 ? "s" : ""}.
+        {hasMatches ? (
+          <Alert variant="error">
+            <strong>Não é possível excluir esta rodada.</strong> Exclua todas as
+            partidas associadas antes de excluir a rodada.
+          </Alert>
+        ) : (
+          <Alert variant="warning">
+            <strong>Atenção:</strong> Esta ação não pode ser desfeita. Todas as
+            partidas, times e estatísticas associadas a esta rodada serão permanentemente excluídos.
           </Alert>
         )}
         {error && <Alert variant="error">{error}</Alert>}
@@ -69,7 +72,7 @@ const DeleteRoundModal = ({
             variant="danger"
             onClick={handleConfirm}
             loading={isDeleting}
-            disabled={isDeleting}
+            disabled={isDeleting || !canDelete}
             aria-label="Excluir"
           >
             Excluir

@@ -359,7 +359,7 @@ const TeamDetailsPage = () => {
             <CardContent>
               {filteredPlayers.length > 0 ? (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1rem" }}>
-                  {filteredPlayers.map((player: Player) => (
+                  {filteredPlayers.map((player: Player, index: number) => (
                     <motion.div
                       key={player.id}
                       initial={{ opacity: 0, y: 8 }}
@@ -375,7 +375,7 @@ const TeamDetailsPage = () => {
                           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                               <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#dbeafe", fontSize: "1.125rem", fontWeight: 700, color: "#2563eb" }}>
-                                {player.display_name.charAt(0).toUpperCase()}
+                                {(player.inscription_order ?? index + 1).toString()}
                               </span>
                               <div style={{ flex: 1 }}>
                                 <h3 style={{ fontWeight: 600, color: "#171717" }}>
@@ -490,6 +490,7 @@ const TeamDetailsPage = () => {
           }}
           championshipId={team.championship_id}
           context="team"
+          roundId={team.round_id}
           currentPlayers={players}
           onExistingPlayerAdded={handleExistingPlayerAdded}
         />

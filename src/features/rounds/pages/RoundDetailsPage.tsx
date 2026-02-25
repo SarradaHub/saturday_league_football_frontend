@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 import { motion } from "framer-motion";
@@ -16,6 +16,7 @@ import {
   FaUser,
   FaUsers,
 } from "react-icons/fa";
+import championshipRepository from "@/features/championships/api/championshipRepository";
 import roundRepository from "@/features/rounds/api/roundRepository";
 import matchRepository from "@/features/matches/api/matchRepository";
 import playerRepository from "@/features/players/api/playerRepository";
@@ -42,6 +43,15 @@ const itemVariants = {
   hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0 },
 };
+
+function getMatchIdFromCreateNextMatchResult(
+  result: Match | { match: Match; queue: Team[] } | undefined,
+): number | undefined {
+  if (!result || typeof result !== "object") return undefined;
+  if ("match" in result && result.match?.id != null) return result.match.id;
+  if ("id" in result && typeof (result as Match).id === "number") return (result as Match).id;
+  return undefined;
+}
 
 const RoundDetailsPage = () => {
   const params = useParams<{ id: string }>();
@@ -92,6 +102,12 @@ const RoundDetailsPage = () => {
   });
 
   const championshipId = round?.championship_id ?? null;
+  const { data: championship } = useQuery({
+    queryKey: ["championship", championshipId],
+    queryFn: () => championshipRepository.findById(championshipId!),
+    enabled: !!championshipId && Number.isFinite(championshipId),
+    staleTime: 5 * 60 * 1000,
+  });
   const {
     data: allRounds,
   } = useQuery({
@@ -109,6 +125,18 @@ const RoundDetailsPage = () => {
 
   const invalidateRound = () =>
     queryClient.invalidateQueries({ queryKey: queryKeys.round(roundId) });
+
+  useEffect(() => {
+    if (!round) return;
+    const title = championship?.name
+      ? `${round.name} | ${championship.name}`
+      : `${round.name} | Pelada`;
+    document.title = title;
+    return () => {
+      document.title = "Saturday League";
+    };
+  }, [round?.name, championship?.name]);
+
   const handleExistingPlayerAdded = () => {
     setToast({ open: true, message: "Jogador adicionado com sucesso!" });
     invalidateRound();
@@ -193,9 +221,11 @@ const RoundDetailsPage = () => {
         setSuggestedMatch(suggestion.suggested_match);
         setPreviewModalOpen(true);
       } else {
-        await roundRepository.createNextMatch(roundId);
+        const result = await roundRepository.createNextMatch(roundId);
         setToast({ open: true, message: "Próxima partida criada com sucesso!" });
         invalidateRound();
+        const matchId = getMatchIdFromCreateNextMatchResult(result);
+        if (matchId != null) navigate(`/matches/${matchId}`);
       }
     } catch (error) {
       setToast({
@@ -211,7 +241,7 @@ const RoundDetailsPage = () => {
     setNextMatchLoading(true);
     try {
       const result = await roundRepository.createNextMatch(roundId, winnerTeamId);
-      if (result && typeof result === 'object' && 'queue' in result) {
+      if (result && typeof result === "object" && "queue" in result) {
         setTeamQueue(((result as { queue: Team[] }).queue ?? []).filter((t) => !t.is_blocked));
       }
       setToast({ open: true, message: "Próxima partida criada com sucesso!" });
@@ -220,6 +250,8 @@ const RoundDetailsPage = () => {
       setNextOpponent(undefined);
       setWinnerSelectionReason(undefined);
       invalidateRound();
+      const matchId = getMatchIdFromCreateNextMatchResult(result);
+      if (matchId != null) navigate(`/matches/${matchId}`);
     } catch (error) {
       setToast({
         open: true,
@@ -234,13 +266,15 @@ const RoundDetailsPage = () => {
     setNextMatchLoading(true);
     try {
       const result = await roundRepository.createNextMatch(roundId);
-      if (result && typeof result === 'object' && 'queue' in result) {
+      if (result && typeof result === "object" && "queue" in result) {
         setTeamQueue(((result as { queue: Team[] }).queue ?? []).filter((t) => !t.is_blocked));
       }
       setToast({ open: true, message: "Próxima partida criada com sucesso!" });
       setPreviewModalOpen(false);
       setSuggestedMatch(null);
       invalidateRound();
+      const matchId = getMatchIdFromCreateNextMatchResult(result);
+      if (matchId != null) navigate(`/matches/${matchId}`);
     } catch (error) {
       setToast({
         open: true,
@@ -285,6 +319,28 @@ const RoundDetailsPage = () => {
           mutationError instanceof Error
             ? mutationError.message
             : "Erro ao criar time.",
+      }),
+  });
+
+  const toggleTeamBlockMutation = useMutation({
+    mutationFn: ({ teamId }: { teamId: number }) =>
+      teamRepository.toggleTeamBlock(teamId),
+    onSuccess: (_, variables) => {
+      const wasBlocked = (round?.teams ?? []).find((t) => t.id === variables.teamId)
+        ?.is_blocked;
+      setToast({
+        open: true,
+        message: wasBlocked ? "Time desbloqueado." : "Time bloqueado.",
+      });
+      invalidateRound();
+    },
+    onError: (mutationError) =>
+      setToast({
+        open: true,
+        message:
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Erro ao bloquear/desbloquear time.",
       }),
   });
 
@@ -382,6 +438,16 @@ const RoundDetailsPage = () => {
           <Card variant="elevated" padding="lg" style={{ gridColumn: "span 12" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", flex: 1 }}>
+                <nav aria-label="Breadcrumb" style={{ fontSize: "0.875rem", color: "#737373" }}>
+                  <Link
+                    to={championshipId ? `/championships/${championshipId}` : "#"}
+                    style={{ color: "#2563eb", textDecoration: "none" }}
+                  >
+                    {championship?.name ?? "Pelada"}
+                  </Link>
+                  <span style={{ margin: "0 0.5rem" }} aria-hidden>›</span>
+                  <span style={{ color: "#404040", fontWeight: 500 }}>{round.name}</span>
+                </nav>
                 <Button
                   type="button"
                   variant="ghost"
@@ -412,6 +478,8 @@ const RoundDetailsPage = () => {
                         onClick={() => setDeleteRoundModalOpen(true)}
                         leftIcon={FaTrash}
                         aria-label="Excluir rodada"
+                        disabled={matches.length > 0}
+                        title={matches.length > 0 ? "Exclua as partidas antes de excluir a rodada." : undefined}
                       >
                         Excluir
                       </Button>
@@ -647,7 +715,11 @@ const RoundDetailsPage = () => {
                           <Card
                             variant="outlined"
                             padding="md"
-                            style={{ cursor: "pointer" }}
+                            style={{
+                              cursor: "pointer",
+                              opacity: team.is_blocked ? 0.7 : 1,
+                              borderColor: team.is_blocked ? "#f97316" : undefined,
+                            }}
                             onClick={() =>
                               navigate(`/teams/${team.id}`, {
                                 state: { roundId },
@@ -659,13 +731,31 @@ const RoundDetailsPage = () => {
                                 <span style={{ display: "flex", height: "3rem", width: "3rem", alignItems: "center", justifyContent: "center", borderRadius: "9999px", backgroundColor: "#ede9fe", fontSize: "1.125rem", fontWeight: 700, color: "#7c3aed" }}>
                                   {team.name.charAt(0).toUpperCase()}
                                 </span>
-                                <div style={{ flex: 1 }}>
-                                  <h3 style={{ fontWeight: 600, color: "#171717", marginBottom: "0.25rem" }}>
-                                    {team.name}
-                                  </h3>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem", flexWrap: "wrap" }}>
+                                    <h3 style={{ fontWeight: 600, color: "#171717" }}>
+                                      {team.name}
+                                    </h3>
+                                    {team.is_blocked && (
+                                      <span
+                                        style={{
+                                          fontSize: "0.75rem",
+                                          fontWeight: 500,
+                                          color: "#9a3412",
+                                          backgroundColor: "#ffedd5",
+                                          padding: "0.125rem 0.5rem",
+                                          borderRadius: "9999px",
+                                        }}
+                                      >
+                                        Bloqueado
+                                      </span>
+                                    )}
+                                  </div>
                                   {team.players && team.players.length > 0 ? (
                                     <p style={{ fontSize: "0.875rem", color: "#737373" }}>
-                                      {team.players.map((player) => player.display_name).join(", ")}
+                                      {team.players
+                                        .map((player, idx) => `${player.inscription_order ?? idx + 1}. ${player.display_name}`)
+                                        .join(", ")}
                                     </p>
                                   ) : (
                                     <p style={{ fontSize: "0.875rem", color: "#a3a3a3", fontStyle: "italic" }}>
@@ -673,6 +763,22 @@ const RoundDetailsPage = () => {
                                     </p>
                                   )}
                                 </div>
+                              </div>
+                              <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  aria-label={team.is_blocked ? "Desbloquear time" : "Bloquear time"}
+                                  leftIcon={team.is_blocked ? FaLockOpen : FaLock}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleTeamBlockMutation.mutate({ teamId: team.id });
+                                  }}
+                                  disabled={toggleTeamBlockMutation.isPending}
+                                >
+                                  {team.is_blocked ? "Desbloquear time" : "Bloquear time"}
+                                </Button>
                               </div>
                             </CardContent>
                           </Card>
@@ -698,26 +804,7 @@ const RoundDetailsPage = () => {
                 Jogadores
               </CardTitle>
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="md"
-                  onClick={() => setSubstituteModalOpen(true)}
-                  disabled={players.length === 0}
-                >
-                  Substituir Jogador
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="md"
-                  onClick={() => {
-                    setPlayerModalGoalkeeperMode(true);
-                    setPlayerModalOpen(true);
-                  }}
-                >
-                  Adicionar Goleiro
-                </Button>
+
                 <Button
                   type="button"
                   variant="primary"

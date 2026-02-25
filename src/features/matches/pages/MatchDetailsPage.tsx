@@ -553,9 +553,9 @@ const TeamColumn = ({ team, align }: TeamColumnProps) => {
           Escalação
         </h4>
         <ul style={{ marginTop: "0.5rem", listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "0.25rem", ...textAlignStyle }}>
-          {team.players.map((player) => (
+          {team.players.map((player, idx) => (
             <li key={player.id} style={{ fontSize: "0.875rem", color: "#737373" }}>
-              {player.display_name}
+              {player.inscription_order ?? idx + 1}. {player.display_name}
             </li>
           ))}
         </ul>
