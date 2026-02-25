@@ -24,7 +24,7 @@ const EditRoundModal = ({
   onUpdate,
   round,
 }: EditRoundModalProps) => {
-  const DatePickerComponent = DatePicker as React.ComponentType<
+  const DatePickerComponent = DatePicker as unknown as React.ComponentType<
     React.ComponentProps<typeof DatePicker> & { style?: React.CSSProperties }
   >;
   const {

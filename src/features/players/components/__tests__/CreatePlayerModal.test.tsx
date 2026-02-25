@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { Player } from "@/types";
 
@@ -45,6 +46,14 @@ vi.mock("@sarradahub/design-system", () => ({
       {children}
     </button>
   ),
+  Alert: ({ children }: { children: ReactNode }) => <div role="alert">{children}</div>,
+  Checkbox: ({ children, checked, onChange, ...rest }: { children?: ReactNode; checked?: boolean; onChange?: (e: { target: { checked: boolean } }) => void; [key: string]: unknown }) => (
+    <label>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange?.({ target: { checked: e.target.checked } })} {...rest} />
+      {children}
+    </label>
+  ),
+  Input: (props: Record<string, unknown>) => <input {...props} />,
 }));
 
 import CreatePlayerModal from "../CreatePlayerModal";
@@ -67,10 +76,20 @@ const renderModal = async (
     ...overrides,
   };
 
+  const roundIdFromRoute = props.selectedRoundId ?? 42;
   const user = userEvent.setup();
-  const renderResult = render(<CreatePlayerModal {...props} />);
+  const renderResult = render(
+    <MemoryRouter initialEntries={[`/rounds/${roundIdFromRoute}`]}>
+      <Routes>
+        <Route path="/rounds/:id" element={<CreatePlayerModal {...props} />} />
+      </Routes>
+    </MemoryRouter>,
+  );
   await waitFor(() =>
-    expect(mockList).toHaveBeenCalledWith(props.championshipId),
+    expect(mockList).toHaveBeenCalledWith(
+      props.championshipId,
+      expect.any(Object),
+    ),
   );
 
   return {
@@ -119,7 +138,7 @@ describe("CreatePlayerModal", () => {
     expect(props.onExistingPlayerAdded).not.toHaveBeenCalled();
   });
 
-  it("shows an error when only whitespace is provided", async () => {
+  it("keeps submit disabled when only whitespace is in the input", async () => {
     const onCreate = vi.fn().mockResolvedValue(undefined);
     const { user } = await renderModal({ onCreate });
 
@@ -127,12 +146,10 @@ describe("CreatePlayerModal", () => {
       "Busque jogadores ou crie um novo",
     );
     await user.type(input, "   ");
-    await user.type(input, "{enter}");
 
+    const submitButton = screen.getByRole("button", { name: "Criar Jogador" });
+    expect(submitButton).toBeDisabled();
     expect(onCreate).not.toHaveBeenCalled();
-    expect(
-      await screen.findByText("Informe um nome válido para o jogador."),
-    ).toBeInTheDocument();
   });
 
   it("calls onExistingPlayerAdded after adding an existing player to a round", async () => {
@@ -175,7 +192,11 @@ describe("CreatePlayerModal", () => {
     await user.click(submitButton);
 
     await waitFor(() =>
-      expect(mockAddToRound).toHaveBeenCalledWith(existingPlayer.id, 42),
+      expect(mockAddToRound).toHaveBeenCalledWith(
+        existingPlayer.id,
+        42,
+        false,
+      ),
     );
     await waitFor(() => expect(onExistingPlayerAdded).toHaveBeenCalled());
     expect(onCreate).not.toHaveBeenCalled();

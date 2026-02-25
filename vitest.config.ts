@@ -20,10 +20,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
-      "@sarradahub/design-system$": resolve(
-        __dirname,
-        "src/design-system/src/index.ts",
-      ),
+      // Subpaths first so they take precedence over the base alias
       "@sarradahub/design-system/tokens": resolve(
         __dirname,
         "src/design-system/src/tokens/index.ts",
@@ -31,6 +28,10 @@ export default defineConfig({
       "@sarradahub/design-system/css": resolve(
         __dirname,
         "src/design-system/dist/styles.css",
+      ),
+      "@sarradahub/design-system": resolve(
+        __dirname,
+        "src/design-system/src/index.ts",
       ),
     },
     conditions: ["import", "module", "browser", "default"],
