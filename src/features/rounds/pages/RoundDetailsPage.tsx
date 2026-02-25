@@ -138,7 +138,7 @@ const RoundDetailsPage = () => {
     return () => {
       document.title = "Saturday League";
     };
-  }, [round?.name, championship?.name]);
+  }, [round, round?.name, championship?.name]);
 
   const handleExistingPlayerAdded = () => {
     setToast({ open: true, message: "Jogador adicionado com sucesso!" });

@@ -19,7 +19,7 @@ export const List = React.forwardRef<HTMLUListElement, ListProps>(
 
     return (
       <Component
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLOListElement & HTMLUListElement>}
         className={cn(
           'text-neutral-900 dark:text-neutral-100',
           spacingClasses[spacing],
@@ -37,7 +37,7 @@ export const List = React.forwardRef<HTMLUListElement, ListProps>(
 
 List.displayName = 'List';
 
-export interface ListItemProps extends React.LiHTMLAttributes<HTMLLIElement> {}
+export type ListItemProps = React.LiHTMLAttributes<HTMLLIElement>;
 
 export const ListItem = React.forwardRef<HTMLLIElement, ListItemProps>(
   ({ className, ...props }, ref) => {

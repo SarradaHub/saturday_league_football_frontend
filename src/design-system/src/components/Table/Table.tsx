@@ -14,6 +14,8 @@ export const Table = React.forwardRef<HTMLTableElement, TableProps>(
           ref={ref}
           className={cn(
             'min-w-full divide-y divide-neutral-200 dark:divide-neutral-700',
+            striped && 'table-striped',
+            hoverable && 'table-hover',
             className,
           )}
           {...props}
@@ -25,8 +27,8 @@ export const Table = React.forwardRef<HTMLTableElement, TableProps>(
 
 Table.displayName = 'Table';
 
-export interface TableHeaderProps
-  extends React.HTMLAttributes<HTMLTableSectionElement> {}
+export type TableHeaderProps =
+  React.HTMLAttributes<HTMLTableSectionElement>;
 
 export const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
@@ -62,6 +64,7 @@ export const TableBody = React.forwardRef<
       className={cn(
         'bg-white dark:bg-neutral-800 divide-y divide-neutral-200 dark:divide-neutral-700',
         striped && 'divide-y-0',
+        hoverable && '[&>tr:hover]:bg-neutral-50 dark:[&>tr:hover]:bg-neutral-700/50',
         className,
       )}
       {...props}
@@ -93,8 +96,8 @@ export const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
 
 TableRow.displayName = 'TableRow';
 
-export interface TableHeadProps
-  extends React.ThHTMLAttributes<HTMLTableCellElement> {}
+export type TableHeadProps =
+  React.ThHTMLAttributes<HTMLTableCellElement>;
 
 export const TableHead = React.forwardRef<
   HTMLTableCellElement,
@@ -114,8 +117,8 @@ export const TableHead = React.forwardRef<
 
 TableHead.displayName = 'TableHead';
 
-export interface TableCellProps
-  extends React.TdHTMLAttributes<HTMLTableCellElement> {}
+export type TableCellProps =
+  React.TdHTMLAttributes<HTMLTableCellElement>;
 
 export const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
   ({ className, ...props }, ref) => {

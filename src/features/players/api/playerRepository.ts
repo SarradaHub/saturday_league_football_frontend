@@ -8,7 +8,7 @@ export interface PlayerFilters extends QueryParams {
   include?: string;
 }
 
-type UpsertPlayerPayload = Partial<
+export type UpsertPlayerPayload = Partial<
   Omit<Player, "id" | "created_at" | "updated_at" | "player_stats" | "rounds">
 > & {
   team_id?: number;

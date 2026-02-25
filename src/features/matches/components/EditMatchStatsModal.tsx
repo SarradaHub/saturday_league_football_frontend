@@ -278,10 +278,14 @@ const EditMatchStatsModal = ({
             inputProps={{ min: 0 }}
           />
           <div style={{ marginBottom: "1.5rem" }}>
-            <label style={{ marginBottom: "0.5rem", display: "block", fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}>
+            <label
+              htmlFor={`was-goalkeeper-${key}`}
+              style={{ marginBottom: "0.5rem", display: "block", fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}
+            >
               Foi Goleiro
             </label>
             <input
+              id={`was-goalkeeper-${key}`}
               type="checkbox"
               checked={stat.was_goalkeeper}
               disabled={isGoalkeeperDisabled}

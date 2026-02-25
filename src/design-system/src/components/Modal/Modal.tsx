@@ -65,16 +65,25 @@ export const Modal: React.FC<ModalProps> = ({
     }
   };
 
+  const handleOverlayKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (closeOnOverlayClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClose();
+    }
+  };
+
   const modalContent = (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={handleOverlayClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
+      onKeyDown={handleOverlayKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label="Fechar modal"
     >
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
       
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation to prevent overlay click from closing modal */}
       <div
         ref={modalRef}
         className={cn(
@@ -86,6 +95,10 @@ export const Modal: React.FC<ModalProps> = ({
         )}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
       >
         {(title || closeOnOverlayClick) && (
           <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">

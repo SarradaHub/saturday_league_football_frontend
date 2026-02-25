@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Modal, Button, Alert, Label } from "@sarradahub/design-system";
@@ -25,7 +25,9 @@ const CreateRoundModal = ({
   onCreate,
   initialChampionshipId = 0,
 }: CreateRoundModalProps) => {
-  const AnyDatePicker = DatePicker as any;
+  const DatePickerComponent = DatePicker as React.ComponentType<
+    React.ComponentProps<typeof DatePicker> & { style?: React.CSSProperties }
+  >;
   const {
     formData,
     setFormData,
@@ -93,7 +95,7 @@ const CreateRoundModal = ({
             <Label htmlFor="round-date-picker" style={{ marginBottom: "0.5rem", display: "block" }}>
               Data da Rodada *
             </Label>
-            <AnyDatePicker
+            <DatePickerComponent
               id="round-date-picker"
               selected={selectedDate}
               onChange={handleDateChange}

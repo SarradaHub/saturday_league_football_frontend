@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Navbar as DsNavbar } from "@sarradahub/design-system";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -12,7 +12,7 @@ const Navbar = () => {
   const location = useLocation();
 
   const toggleMenu = () => setIsOpen((previous) => !previous);
-  const closeMenu = () => setIsOpen(false);
+  const closeMenu = useCallback(() => setIsOpen(false), []);
 
   const handleLogout = async () => {
     await logout();

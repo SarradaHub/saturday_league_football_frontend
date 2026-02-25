@@ -17,7 +17,7 @@ import { format, parse } from "date-fns";
 import { FaArrowLeft, FaFutbol, FaMedal, FaEdit, FaTrash } from "react-icons/fa";
 import { GiGoalKeeper } from "react-icons/gi";
 import { GoalIcon } from "lucide-react";
-import playerRepository from "@/features/players/api/playerRepository";
+import playerRepository, { type UpsertPlayerPayload } from "@/features/players/api/playerRepository";
 import roundRepository from "@/features/rounds/api/roundRepository";
 import EditPlayerModal from "@/features/players/components/EditPlayerModal";
 import DeletePlayerModal from "@/features/players/components/DeletePlayerModal";
@@ -153,7 +153,7 @@ const PlayerDetailsPage = () => {
   }, [data?.player_stats]);
 
   const updatePlayerMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) =>
+    mutationFn: ({ id, data }: { id: number; data: UpsertPlayerPayload }) =>
       playerRepository.updatePlayer(id, data),
     onSuccess: () => {
       setToast({ open: true, message: "Jogador atualizado com sucesso!" });
