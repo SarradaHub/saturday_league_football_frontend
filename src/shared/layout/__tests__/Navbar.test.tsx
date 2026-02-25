@@ -39,8 +39,7 @@ describe("Navbar", () => {
     vi.mocked(authService.checkAuth).mockResolvedValueOnce({
       id: 1,
       email: "user@example.com",
-      created_at: "",
-      updated_at: "",
+      is_admin: false,
     });
     renderNavbar();
     expect(
