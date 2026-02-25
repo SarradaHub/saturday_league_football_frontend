@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Modal, Button, Alert, Card, CardContent, Input } from "@platform/design-system";
+import { Modal, Button, Alert, Card, CardContent, Input } from "@sarradahub/design-system";
 import { FaSearch } from "react-icons/fa";
 import { Match, Player } from "@/types";
 import matchRepository from "@/features/matches/api/matchRepository";

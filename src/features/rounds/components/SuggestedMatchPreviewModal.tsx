@@ -1,4 +1,4 @@
-import { Modal, Button } from "@platform/design-system";
+import { Modal, Button } from "@sarradahub/design-system";
 import { Team } from "@/types";
 
 interface SuggestedMatch {

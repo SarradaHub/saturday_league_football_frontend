@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Card, CardContent, LoadingSpinner } from "@platform/design-system";
+import { Container, Card, CardContent, LoadingSpinner } from "@sarradahub/design-system";
 import { useAuth } from "../hooks/useAuth";
 import LoginForm from "../components/LoginForm";
 

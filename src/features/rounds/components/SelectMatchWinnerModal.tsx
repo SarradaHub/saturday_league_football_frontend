@@ -1,4 +1,4 @@
-import { Modal, Button, Alert } from "@platform/design-system";
+import { Modal, Button, Alert } from "@sarradahub/design-system";
 import { Team } from "@/types";
 
 interface SelectMatchWinnerModalProps {

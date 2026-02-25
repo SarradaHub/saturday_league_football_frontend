@@ -1,6 +1,6 @@
 import { Player } from "@/types";
 import { FaSearch } from "react-icons/fa";
-import { Input } from "@platform/design-system";
+import { Input } from "@sarradahub/design-system";
 
 interface PlayerSearchInputProps {
   searchTerm: string;

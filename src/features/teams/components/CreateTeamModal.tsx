@@ -1,5 +1,5 @@
 import { FormEvent, useEffect } from "react";
-import { Modal, Button, Alert } from "@platform/design-system";
+import { Modal, Button, Alert } from "@sarradahub/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 
@@ -29,7 +29,7 @@ const CreateTeamModal = ({
   });
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, round_id: roundId }));
+    setFormData((prev: typeof formData) => ({ ...prev, round_id: roundId }));
   }, [roundId, setFormData]);
 
   const handleClose = () => {

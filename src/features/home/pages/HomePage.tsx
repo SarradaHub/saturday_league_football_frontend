@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
   Container,
-} from "@platform/design-system";
+} from "@sarradahub/design-system";
 
 const heroFeatures = [
   {

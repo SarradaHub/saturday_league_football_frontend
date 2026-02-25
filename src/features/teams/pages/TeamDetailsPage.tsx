@@ -33,8 +33,8 @@ import DeleteTeamModal from "@/features/teams/components/DeleteTeamModal";
 import StatCard from "@/shared/components/cards/StatCard";
 import SearchInput from "@/shared/components/search/SearchInput";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@platform/design-system";
-import { colors } from "@platform/design-system/tokens";
+import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@sarradahub/design-system";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Player } from "@/types";
 
 const queryKeys = {

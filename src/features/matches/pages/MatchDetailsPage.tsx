@@ -14,8 +14,8 @@ import DeleteMatchModal from "@/features/matches/components/DeleteMatchModal";
 import AddGoalkeeperModal from "@/features/matches/components/AddGoalkeeperModal";
 import SubstitutePlayerInMatchModal from "@/features/matches/components/SubstitutePlayerInMatchModal";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@platform/design-system";
-import { colors } from "@platform/design-system/tokens";
+import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@sarradahub/design-system";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Match, Player } from "@/types";
 
 const queryKeys = {

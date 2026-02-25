@@ -10,8 +10,8 @@ import CreateChampionshipModal, {
   ChampionshipPayload,
 } from "@/features/championships/components/CreateChampionshipModal";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { Alert, Button, Card, CardHeader, CardTitle, CardContent, Container } from "@platform/design-system";
-import { colors } from "@platform/design-system/tokens";
+import { Alert, Button, Card, CardHeader, CardTitle, CardContent, Container } from "@sarradahub/design-system";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Championship } from "@/types";
 
 const queryKeys = {

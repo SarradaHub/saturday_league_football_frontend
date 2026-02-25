@@ -23,8 +23,8 @@ import EditPlayerModal from "@/features/players/components/EditPlayerModal";
 import DeletePlayerModal from "@/features/players/components/DeletePlayerModal";
 import StatCard from "@/shared/components/cards/StatCard";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@platform/design-system";
-import { colors } from "@platform/design-system/tokens";
+import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert } from "@sarradahub/design-system";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Player, PlayerStat, Round } from "@/types";
 
 interface PlayerDetails extends Player {
@@ -153,7 +153,7 @@ const PlayerDetailsPage = () => {
   }, [data?.player_stats]);
 
   const updatePlayerMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { name: string } }) =>
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
       playerRepository.updatePlayer(id, data),
     onSuccess: () => {
       setToast({ open: true, message: "Jogador atualizado com sucesso!" });

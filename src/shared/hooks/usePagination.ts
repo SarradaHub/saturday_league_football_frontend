@@ -54,7 +54,7 @@ export function usePagination<T>({
 
   const setPerPage = useCallback((newPerPage: number) => {
     setPerPageState(newPerPage);
-    setPage(1); // Reset to first page when changing per page
+    setPage(1);
   }, []);
 
   const refetch = useCallback(async () => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Modal, Button, Alert, Checkbox } from "@platform/design-system";
+import { Modal, Button, Alert, Checkbox } from "@sarradahub/design-system";
 import RoundFilterSection from "@/features/rounds/components/RoundFilterSection";
 import PlayerSearchInput from "@/features/players/components/PlayerSearchInput";
 import playerRepository from "@/features/players/api/playerRepository";

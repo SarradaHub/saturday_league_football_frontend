@@ -1,4 +1,4 @@
-import { Button } from "@platform/design-system";
+import { Button } from "@sarradahub/design-system";
 import { Player } from "@/types";
 
 interface ActionButtonsProps {

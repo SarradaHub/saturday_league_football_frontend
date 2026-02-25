@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
-import { Card, CardContent, cn } from "@platform/design-system";
+import { Card, CardContent, cn } from "@sarradahub/design-system";
 
 interface StatCardProps extends Omit<HTMLMotionProps<"div">, "children"> {
   title: string;

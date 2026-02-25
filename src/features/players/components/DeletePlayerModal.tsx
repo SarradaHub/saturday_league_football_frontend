@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Button, Alert } from "@platform/design-system";
+import { Modal, Button, Alert } from "@sarradahub/design-system";
 import { Player } from "@/types";
 
 interface DeletePlayerModalProps {

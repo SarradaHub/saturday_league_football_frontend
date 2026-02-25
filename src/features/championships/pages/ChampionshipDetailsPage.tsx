@@ -13,8 +13,8 @@ import EditChampionshipModal from "@/features/championships/components/EditChamp
 import DeleteChampionshipModal from "@/features/championships/components/DeleteChampionshipModal";
 import { ChampionshipPayload } from "@/features/championships/components/EditChampionshipModal";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { Alert, Container, Card, CardHeader, CardTitle, CardContent, Button } from "@platform/design-system";
-import { colors } from "@platform/design-system/tokens";
+import { Alert, Container, Card, CardHeader, CardTitle, CardContent, Button } from "@sarradahub/design-system";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Round } from "@/types";
 
 const queryKeys = {

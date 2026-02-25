@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Modal, Button, Alert } from "@platform/design-system";
+import { Modal, Button, Alert } from "@sarradahub/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 import { Round } from "@/types";
@@ -13,7 +13,7 @@ interface EditRoundModalProps {
   round: Round | null;
 }
 
-interface RoundFormState {
+interface RoundFormState extends Record<string, unknown> {
   name: string;
   round_date: string;
 }
@@ -24,6 +24,7 @@ const EditRoundModal = ({
   onUpdate,
   round,
 }: EditRoundModalProps) => {
+  const AnyDatePicker = DatePicker as any;
   const {
     formData,
     setFormData,
@@ -97,7 +98,7 @@ const EditRoundModal = ({
             <label htmlFor="round-date-picker" style={{ marginBottom: "0.5rem", display: "block", fontSize: "0.875rem", fontWeight: 500, color: "#404040" }}>
               Data da Rodada *
             </label>
-            <DatePicker
+            <AnyDatePicker
               id="round-date-picker"
               selected={selectedDate}
               onChange={handleDateChange}

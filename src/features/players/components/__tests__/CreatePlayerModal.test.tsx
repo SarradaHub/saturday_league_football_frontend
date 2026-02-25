@@ -29,7 +29,7 @@ vi.mock("@/features/players/api/playerRepository", () => ({
   },
 }));
 
-vi.mock("@platform/design-system", () => ({
+vi.mock("@sarradahub/design-system", () => ({
   Modal: ({ isOpen, onClose, title, children }: { isOpen: boolean; onClose: () => void; title?: string; children: ReactNode }) => {
     if (!isOpen) return null;
     return (

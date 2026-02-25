@@ -7,8 +7,6 @@ if (!HTMLFormElement.prototype.requestSubmit) {
     if (this.dispatchEvent(submitEvent)) {
       this.submit();
     }
-    // Marca o parâmetro como utilizado para satisfazer o linter,
-    // sem alterar o comportamento do polyfill.
     void _submitter;
   };
 }

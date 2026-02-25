@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Modal, Button, Alert, Card, CardContent } from "@platform/design-system";
+import { Modal, Button, Alert, Card, CardContent } from "@sarradahub/design-system";
 import roundRepository from "@/features/rounds/api/roundRepository";
 import { Player, Round } from "@/types";
 

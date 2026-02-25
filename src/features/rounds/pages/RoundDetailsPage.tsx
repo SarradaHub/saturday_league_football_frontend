@@ -31,13 +31,16 @@ import SubstitutePlayerModal from "@/features/rounds/components/SubstitutePlayer
 import EditRoundModal from "@/features/rounds/components/EditRoundModal";
 import DeleteRoundModal from "@/features/rounds/components/DeleteRoundModal";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
-import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert, Input } from "@platform/design-system";
-import { colors } from "@platform/design-system/tokens";
+import { Container, Card, CardHeader, CardTitle, CardContent, Button, Alert, Input } from "@sarradahub/design-system";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Match, Player, Team } from "@/types";
 
 const queryKeys = {
   round: (id: number) => ["round", id] as const,
 };
+
+const ROUND_CACHE_STALE_MS = 2 * 60 * 1000;
+const CHAMPIONSHIP_CACHE_STALE_MS = 5 * 60 * 1000;
 
 const itemVariants = {
   hidden: { opacity: 0, y: 8 },
@@ -97,8 +100,8 @@ const RoundDetailsPage = () => {
     queryKey: queryKeys.round(roundId),
     queryFn: () => roundRepository.findById(roundId),
     enabled: Number.isFinite(roundId),
-    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
-    refetchOnWindowFocus: false, // Prevent refetch on window focus
+    staleTime: ROUND_CACHE_STALE_MS,
+    refetchOnWindowFocus: false,
   });
 
   const championshipId = round?.championship_id ?? null;
@@ -106,7 +109,7 @@ const RoundDetailsPage = () => {
     queryKey: ["championship", championshipId],
     queryFn: () => championshipRepository.findById(championshipId!),
     enabled: !!championshipId && Number.isFinite(championshipId),
-    staleTime: 5 * 60 * 1000,
+    staleTime: CHAMPIONSHIP_CACHE_STALE_MS,
   });
   const {
     data: allRounds,
@@ -118,9 +121,9 @@ const RoundDetailsPage = () => {
       return Array.isArray(rounds) ? rounds.filter((r) => r.championship_id === championshipId) : [];
     },
     enabled: !!championshipId && Number.isFinite(championshipId) && isPlayerModalOpen,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes to prevent unnecessary refetches
-    refetchOnWindowFocus: false, // Prevent refetch on window focus
-    refetchOnMount: false, // Only refetch if data is stale
+    staleTime: CHAMPIONSHIP_CACHE_STALE_MS,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const invalidateRound = () =>

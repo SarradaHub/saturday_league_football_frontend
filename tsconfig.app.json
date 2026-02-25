@@ -17,16 +17,11 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
-      "@platform/design-system": ["../../platform/design-system/src/index.ts"],
-      "@platform/design-system/tokens": ["../../platform/design-system/src/tokens/index.ts"],
-      "@platform/design-system/icons": ["../../platform/design-system/src/icons/index.ts"],
-      "@platform/design-system/utils": ["../../platform/design-system/src/utils/cn.ts"],
-      "@platform/design-system/css": ["../../platform/design-system/dist/styles.css"],
-      "@sarradahub/design-system": ["../../platform/design-system/src/index.ts"],
-      "@sarradahub/design-system/tokens": ["../../platform/design-system/src/tokens/index.ts"],
-      "@sarradahub/design-system/icons": ["../../platform/design-system/src/icons/index.ts"],
-      "@sarradahub/design-system/utils": ["../../platform/design-system/src/utils/cn.ts"],
-      "@sarradahub/design-system/css": ["../../platform/design-system/dist/styles.css"]
+      "@sarradahub/design-system": ["design-system/src/index.ts"],
+      "@sarradahub/design-system/tokens": ["design-system/src/tokens/index.ts"],
+      "@sarradahub/design-system/icons": ["design-system/src/icons/index.ts"],
+      "@sarradahub/design-system/utils": ["design-system/src/utils/cn.ts"],
+      "@sarradahub/design-system/css": ["design-system/dist/styles.css"]
     },
 
     /* Linting */
@@ -36,6 +31,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "../../platform/design-system/src"],
-  "exclude": ["../platform/design-system/dist"]
+  "include": ["src"]
 }

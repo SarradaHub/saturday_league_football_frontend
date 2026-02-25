@@ -1,5 +1,5 @@
 import { FiGithub, FiMail, FiArrowUpRight } from "react-icons/fi";
-import { Footer as DsFooter, FooterSection } from "@platform/design-system";
+import { Footer as DsFooter, FooterSection } from "@sarradahub/design-system";
 
 const footerLinks = [
   { href: "#!", label: "Recursos" },

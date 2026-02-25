@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Modal, Button, Alert, Card, CardHeader, CardTitle, CardContent } from "@platform/design-system";
+import { Modal, Button, Alert, Card, CardHeader, CardTitle, CardContent } from "@sarradahub/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 import { Match, Player, PlayerStat } from "@/types";

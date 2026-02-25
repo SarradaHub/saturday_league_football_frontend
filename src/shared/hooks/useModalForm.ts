@@ -193,8 +193,12 @@ export const useModalForm = <T extends Record<string, unknown>>(
     formHandlerRef.current!.resetForm(initialState);
   }, [initialState]);
 
-  const setFormData = useCallback((data: T) => {
-    formHandlerRef.current!.updateState({ data });
+  const setFormData = useCallback((updater: T | ((prev: T) => T)) => {
+    const handler = formHandlerRef.current!;
+    const current = handler.getState().data;
+    const nextData =
+      typeof updater === "function" ? (updater as (prev: T) => T)(current) : updater;
+    handler.updateState({ data: nextData });
   }, []);
 
   return {

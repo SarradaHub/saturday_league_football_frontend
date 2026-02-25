@@ -1,7 +1,7 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { LoginCredentials } from "../types";
-import { Input, Button, Alert } from "@platform/design-system";
+import { Input, Button, Alert } from "@sarradahub/design-system";
 
 interface LoginFormProps {
   onSuccess?: () => void;

@@ -1,5 +1,5 @@
 import { ChangeEvent, InputHTMLAttributes } from "react";
-import { Input, Textarea, Select } from "@platform/design-system";
+import { Input, Textarea, Select } from "@sarradahub/design-system";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 

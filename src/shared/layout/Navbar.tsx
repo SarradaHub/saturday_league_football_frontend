@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button, Navbar as DsNavbar } from "@platform/design-system";
+import { Button, Navbar as DsNavbar } from "@sarradahub/design-system";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 
 const navigationLinks = [{ to: "/championships", label: "Peladas" }];

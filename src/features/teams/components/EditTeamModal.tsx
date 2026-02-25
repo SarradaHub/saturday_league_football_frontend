@@ -1,5 +1,5 @@
 import { FormEvent, useEffect } from "react";
-import { Modal, Button, Alert } from "@platform/design-system";
+import { Modal, Button, Alert } from "@sarradahub/design-system";
 import FormInput from "@/shared/components/modal/FormInput";
 import { useModalForm } from "@/shared/hooks/useModalForm";
 import { Team } from "@/types";

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaTrophy, FaMedal, FaShieldAlt } from "react-icons/fa";
-import { Card, CardContent, Alert, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@platform/design-system";
+import { Card, CardContent, Alert, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@sarradahub/design-system";
 import roundRepository from "@/features/rounds/api/roundRepository";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 

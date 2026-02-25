@@ -1,6 +1,6 @@
 import { FiFilter } from "react-icons/fi";
 import { format, parse } from "date-fns";
-import { Select, Button } from "@platform/design-system";
+import { Select, Button } from "@sarradahub/design-system";
 import { Player, Round } from "@/types";
 
 interface RoundFilterSectionProps {
